@@ -1,0 +1,11 @@
+.idea
+*.phar
+scratch*
+.DS_Store
+vendor/*
+releases
+wp-content
+
+wordpress
+src/vendor/
+src/dependencies/
