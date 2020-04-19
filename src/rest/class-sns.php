@@ -9,7 +9,7 @@
  * @subpackage EA_WP_AWS_SES_Bounce_Handler/sns
  */
 
-namespace EA_WP_AWS_SES_Bounce_Handler\sns;
+namespace EA_WP_AWS_SES_Bounce_Handler\rest;
 
 use EA_WP_AWS_SES_Bounce_Handler\includes\Settings_Interface;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
@@ -51,28 +51,144 @@ class SNS extends WPPB_Object {
 	}
 
 	/**
-	 * When a bounce notification is received from SES, this function deletes the user from the Newsletter plugin
-	 * and fires an action for other plugins to hook into.
+	 * Defines the REST endpoint itself. Added on WordPress `rest_api_init` action.
+	 */
+	public function add_ea_aws_ses_rest_endpoint() {
+
+		register_rest_route(
+			'ea/v1',
+			'/aws-ses/',
+			array(
+				'methods'  => 'POST',
+				'callback' => array( $this, 'process_new_aws_sns_notification' ),
+			)
+		);
+	}
+
+	/**
+	 * Parse the REST request for the SNS notification.
 	 *
-	 * @hooked filter ea_aws_sns_notification
+	 * @param \WP_REST_Request $request The HTTP request received at our REST endpoint.
+	 *
+	 * @return bool
+	 */
+	public function process_new_aws_sns_notification( \WP_REST_Request $request ) {
+
+		$headers = $request->get_headers();
+
+		// If this is not an AWS SNS message.
+		if ( ! isset( $headers['x_amz_sns_message_type'] ) || ! isset( $headers['x_amz_sns_topic_arn'] ) ) {
+			return false;
+		}
+
+		$body = json_decode( $request->get_body() );
+
+		/**
+		 * The possible message type values are SubscriptionConfirmation, Notification, and UnsubscribeConfirmation.
+		 *
+		 * @see https://docs.aws.amazon.com/sns/latest/dg/sns-message-and-json-formats.html
+		 */
+		$message_type = $headers['x_amz_sns_message_type'][0];
+
+		switch ( $message_type ) {
+			case 'SubscriptionConfirmation':
+				$this->blindly_confirm_subscription_requests( $headers, $body );
+
+				return true;
+
+			case 'UnsubscribeConfirmation':
+				// Unimplemented.
+				return false;
+
+			case 'Notification':
+				$topic_arn = $body->TopicArn;
+				$message   = json_decode( $body->Message );
+
+				$this->handle_bounces( $topic_arn, $headers, $body, $message );
+				$this->handle_complaints( $topic_arn, $headers, $body, $message );
+
+				break;
+			default:
+				// Unexpected.
+				return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Respond to AWS subscription requests with "yes"!
+	 *
+	 * @param array  $headers  The HTTP headers received from AWS SNS.
+	 * @param object $body     The parsed JSON received from AWS SNS.
+	 *
+	 * @return array
+	 *
+	 * phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+	 */
+	public function blindly_confirm_subscription_requests( $headers, $body ) {
+
+		$subscription_topic = $body->TopicArn;
+
+		$confirmation_url = $body->SubscribeURL;
+
+		$request_response = wp_remote_get( $confirmation_url );
+
+		if ( is_wp_error( $request_response ) ) {
+			/**
+			 * The request_response is an error, usually when there is no response whatsoever, or a problem
+			 * initiating the communication.
+			 *
+			 * @var \WP_Error $request_response
+			 */
+
+			$error_message = 'Error confirming subscription <b><i>' . $subscription_topic . '</i></b>: ' . $request_response->get_error_message();
+
+			return array(
+				'error'   => $request_response->get_error_code(),
+				'message' => $error_message,
+			);
+		}
+
+		// If unsuccessful.
+		if ( 2 !== intval( $request_response['response']['code'] / 100 ) ) {
+
+			$xml = new \SimpleXMLElement( $request_response['body'] );
+
+			$error_message = 'Error confirming subscription for topic <b><i>' . $subscription_topic . '</i></b>. ' . $request_response['response']['message'] . ' : ' . $xml->{'Error'}->{'Message'};
+
+			return array(
+				'error'   => $request_response['response']['code'],
+				'message' => $error_message,
+			);
+		}
+
+		$message = "AWS SNS topic <b><i>$subscription_topic</i></b> subscription confirmed.";
+
+		return array(
+			'success' => $subscription_topic,
+			'message' => $message,
+		);
+	}
+
+	/**
+	 * When a bounce notification is received from SES fire the action for integrations and other plugins to hook into.
+	 *
+	 * @hooked filter ea_aws_ses_notification
 	 *
 	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
-	 * @see https://wordpress.org/plugins/newsletter/
 	 *
-	 * @param array  $handled                 Array of plugins that have handled this notification.
 	 * @param string $notification_topic_arn  The ARN of the received notification.
 	 * @param array  $headers                 HTTP headers received from AWS SNS.
 	 * @param object $body                    HTTP body received from AWS SNS.
 	 * @param object $message                 The (potential) bounce report object from AWS SES.
-	 *
-	 * @return array $handled
 	 */
-	public function handle_bounces( $handled, $notification_topic_arn, $headers, $body, $message ) {
+	public function handle_bounces( $notification_topic_arn, $headers, $body, $message ) {
 
 		$bounce_arn = $this->settings->get_bounces_arn();
 
 		if ( $bounce_arn !== $notification_topic_arn || 'Bounce' !== $message->notificationType ) {
-			return $handled;
+			return;
 		}
 
 		if ( 'Permanent' === $message->bounce->bounceType ) {
@@ -93,35 +209,26 @@ class SNS extends WPPB_Object {
 				do_action( 'handle_ses_bounce', $email_address, $bounced_recipient, $message );
 			}
 		}
-
-		$handled[] = array( $this->plugin_name, __FUNCTION__ );
-
-		return $handled;
 	}
 
 	/**
-	 * When a complaint is received from SES, this function unsubscribes the user from the Newsletter plugin
-	 * and fires an action for other plugins to hook into.
+	 * When a complaint notification is received from SES fire the action for integrations and other plugins to hook into.
 	 *
 	 * @hooked filter ea_aws_sns_notification
 	 *
 	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
-	 * @see https://wordpress.org/plugins/newsletter/
 	 *
-	 * @param array  $handled                 Array of plugins that have handled this notification.
 	 * @param string $notification_topic_arn  The ARN of the received notification.
 	 * @param array  $headers                 HTTP headers received from AWS SNS.
 	 * @param object $body                    HTTP body received from AWS SNS.
 	 * @param object $message                 The (potential) complaint report object from AWS SES.
-	 *
-	 * @return array
 	 */
-	public function handle_complaints( $handled, $notification_topic_arn, $headers, $body, $message ) {
+	public function handle_complaints( $notification_topic_arn, $headers, $body, $message ) {
 
 		$complaints_arn = $this->settings->get_complaints_arn();
 
 		if ( $complaints_arn !== $notification_topic_arn || 'Complaint' !== $message->notificationType ) {
-			return $handled;
+			return;
 		}
 
 		foreach ( $message->complaint->complainedRecipients as $complained_recipient ) {
@@ -139,11 +246,6 @@ class SNS extends WPPB_Object {
 			 */
 			do_action( 'handle_ses_complaint', $email_address, $complained_recipient, $message );
 		}
-
-		$handled[] = array( $this->plugin_name, __FUNCTION__ );
-
-		return $handled;
-
 	}
 
 }

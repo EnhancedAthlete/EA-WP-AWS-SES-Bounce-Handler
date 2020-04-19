@@ -21,6 +21,8 @@
 
 	<p>Follow Amazon's <a href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html">Configuring Amazon SNS Notifications for Amazon SES</a> document to set up.</p>
 
+	<p>Use endpoint: <em><?php echo get_rest_url( null, 'ea/v1/aws-ses/' ); ?></em></p>
+
 	<ul >
 		<li>WordPress: adds <a href="<?php echo esc_url( admin_url( 'users.php?role=bounced_email' ) ); ?>">Bounced Email</a> role to users</li>
 		<li>WooCommerce: adds a note and notice on orders whose email address bounced</li>

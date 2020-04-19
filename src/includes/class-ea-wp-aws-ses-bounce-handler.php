@@ -20,7 +20,7 @@ use EA_WP_AWS_SES_Bounce_Handler\admin\Settings_Page;
 use EA_WP_AWS_SES_Bounce_Handler\integrations\Newsletter;
 use EA_WP_AWS_SES_Bounce_Handler\integrations\WooCommerce;
 use EA_WP_AWS_SES_Bounce_Handler\integrations\WordPress;
-use EA_WP_AWS_SES_Bounce_Handler\sns\SNS;
+use EA_WP_AWS_SES_Bounce_Handler\rest\SNS;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Loader_Interface;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
 
@@ -166,10 +166,10 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 	 */
 	private function define_sns_hooks() {
 
-		$this->sns = $plugin_sns = new SNS( $this->get_plugin_name(), $this->get_version(), $this->settings );
-
-		$this->loader->add_filter( 'ea_aws_sns_notification', $plugin_sns, 'handle_complaints', 10, 5 );
-		$this->loader->add_filter( 'ea_aws_sns_notification', $plugin_sns, 'handle_bounces', 10, 5 );
+		$this->sns = new SNS( $this->get_plugin_name(), $this->get_version(), $this->settings );
+		$this->loader->add_action( 'rest_api_init', $this->sns, 'add_ea_aws_ses_rest_endpoint' );
+		$this->loader->add_filter( 'ea_aws_sns_notification', $this->sns, 'handle_complaints', 10, 5 );
+		$this->loader->add_filter( 'ea_aws_sns_notification', $this->sns, 'handle_bounces', 10, 5 );
 
 	}
 
