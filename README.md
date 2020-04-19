@@ -83,6 +83,8 @@ Also `handle_ses_complaint`.
 
 [Testing Email Sending in Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mailbox-simulator.html)
 
+NB: When testing on your staging site, that must also be registered in SNS. 
+
 ## Develop
 
 See [BrianHenryIE/wordpress-plugin-boilerplate](https://github.com/brianhenryie/wordpress-plugin-boilerplate) repo for developer notes.
