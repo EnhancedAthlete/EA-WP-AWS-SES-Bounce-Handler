@@ -72,6 +72,7 @@
       "delete_vendor_directories": false
     },
     "symlinks": {
+      "src": "wp-content/plugins/ea-wp-aws-ses-bounce-handler",
       "vendor/wordpress/wordpress/src": "wordpress",
       "vendor/enhancedathlete/ea-wp-aws-sns-client-rest-endpoint/trunk": "wp-content/plugins/ea-wp-aws-sns-client-rest-endpoint"
     },
