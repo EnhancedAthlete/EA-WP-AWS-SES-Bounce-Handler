@@ -44,7 +44,7 @@
   "require-dev": {
     "brianhenryie/composer-phpstorm": "dev-master",
     "cweagans/composer-patches": "~1.0",
-    "coenjacobs/mozart": "^0.4.0",
+    "coenjacobs/mozart": "0.5.1",
     "wordpress/wordpress": ">=5.4",
     "kporras07/composer-symlinks": "dev-master",
     "phpunit/phpunit"     : ">=7.5",
@@ -60,14 +60,16 @@
   "extra": {
     "patches": {
       "coenjacobs/mozart": {
-        "Allow default packages": "https://github.com/coenjacobs/mozart/pull/34.patch"
+        "Allow default packages" : "https://github.com/coenjacobs/mozart/pull/34.patch",
+        "Add config option to disable deleting vendor directories": "https://github.com/coenjacobs/mozart/pull/38.patch"
       }
     },
     "mozart": {
       "dep_namespace": "EA_WP_AWS_SES_Bounce_Handler\\",
       "dep_directory": "/src/vendor/",
-      "classmap_directory": "/classes/dependencies/",
-      "classmap_prefix": "EA_WP_AWS_SES_Bounce_Handler_"
+      "classmap_directory": "/src/dependencies/",
+      "classmap_prefix": "EA_WP_AWS_SES_Bounce_Handler_",
+      "delete_vendor_directories": false
     },
     "symlinks": {
       "vendor/wordpress/wordpress/src": "wordpress",
