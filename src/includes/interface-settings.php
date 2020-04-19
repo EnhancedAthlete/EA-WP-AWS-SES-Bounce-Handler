@@ -24,6 +24,8 @@ interface Settings_Interface {
 	const BOUNCES_ARN    = 'ea-wp-aws-ses-bounce-handler-bounces-arn';
 	const COMPLAINTS_ARN = 'ea-wp-aws-ses-bounce-handler-complaints-arn';
 
+	const CONFIRMED_ARNS = 'ea-wp-aws-ses-bounce-handler-confirmed-arns';
+
 	/**
 	 * Return the AWS resource identifier used by SNS for the bounces topic.
 	 *
@@ -37,4 +39,19 @@ interface Settings_Interface {
 	 * @return string
 	 */
 	public function get_complaints_arn();
+
+	/**
+	 * Return the list of ARNs that have been successfully confirmed.
+	 *
+	 * @return string[]
+	 */
+	public function get_confirmed_arns();
+
+	/**
+	 * Record a successfully confirmed ARN subscription.
+	 *
+	 * @param string $arn AWS SNS ARN.
+	 */
+	public function set_confirmed_arn( $arn );
+
 }

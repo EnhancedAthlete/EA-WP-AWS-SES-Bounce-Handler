@@ -165,6 +165,8 @@ class SNS extends WPPB_Object {
 
 		$message = "AWS SNS topic <b><i>$subscription_topic</i></b> subscription confirmed.";
 
+		$this->settings->set_confirmed_arn( $subscription_topic );
+
 		return array(
 			'success' => $subscription_topic,
 			'message' => $message,
