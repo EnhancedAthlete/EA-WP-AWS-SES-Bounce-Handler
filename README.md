@@ -29,7 +29,7 @@ This plugin parses the bounce and complaint notifications, adds the "Bounced Ema
 ## Installation
 
 * Download the [latest release from GitHub](https://github.com/EnhancedAthlete/EA-WP-AWS-SNS-Client-REST-Endpoint/releases)
-* Install required [EA WP AWS SNS Client REST Endpoint](https://github.com/EnhancedAthlete/ea-wp-aws-sns-client-rest-endpoint) plugin
+* Install required [EA WP AWS SNS Client REST Endpoint](https://github.com/EnhancedAthlete/ea-wp-aws-sns-client-rest-endpoint) plugin from its GitHub releases
 * Follow Amazon's [Configuring Amazon SNS Notifications for Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html) document
 * Subscribe to the SNS topics with `<https://your-website.com>/wp-json/ea/v1/aws-sns/`
 * Confirm the subscriptions in WordPress admin dashboard
