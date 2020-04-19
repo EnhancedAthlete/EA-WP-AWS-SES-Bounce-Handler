@@ -72,4 +72,103 @@ class Settings_Page extends WPPB_Object {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/admin-display.php';
 	}
 
+	/**
+	 * Figure out if WP_Mail is being overridden.
+	 */
+	public function get_wp_mail_info() {
+
+		$wp_mail_reflector = new \ReflectionFunction( 'wp_mail' );
+		$wp_mail_filename  = $wp_mail_reflector->getFileName();
+
+		$built_in_wp_mail_filename = 'wp-includes/pluggable.php';
+
+		// If wp_mail has been overridden.
+		if ( substr( $wp_mail_filename, - 1 * strlen( $built_in_wp_mail_filename ) ) !== $built_in_wp_mail_filename ) {
+
+			$plugin = $this->get_plugin_from_path( $wp_mail_filename );
+
+			if ( null === $plugin ) {
+				return '<div class="notice inline notice-warning"><p>WordPress is sending mail using <em>' . $wp_mail_filename . '</em>.</p></div>';
+			}
+
+			$notice_type = 'warning';
+			if ( stristr( $plugin['Name'], ' ses' )
+				|| stristr( $plugin['Description'], ' ses' ) ) {
+				$notice_type = 'success';
+			}
+
+			return '<div class="notice inline notice-' . $notice_type . '"><p>WordPress is sending mail using <em>' . $plugin['Name'] . '</em> plugin.</p></div>';
+
+		}
+
+		// If phpmailer has been set, check is it the built-in WordPress class.
+		global $phpmailer;
+		if ( ! empty( $phpmailer ) ) {
+			try {
+				$phpmailer_reflector = new \ReflectionClass( get_class( $phpmailer ) );
+
+			} catch ( \ReflectionException $e ) {
+				return '<div class="notice inline notice-error"><p>Error checking PHPMailer class: ' . $e->getMessage() . ' – ' . get_class( $phpmailer ) . '</p></div>';
+
+			}
+			$phpmailer_filename = $phpmailer_reflector->getFileName();
+
+			$built_in_phpmailer_filename = 'wp-includes/class-phpmailer.php';
+
+			// If phpMailer has been overridden (this happens in tests too).
+			if ( substr( $phpmailer_filename, - 1 * strlen( $built_in_phpmailer_filename ) ) !== $built_in_phpmailer_filename ) {
+
+				$plugin = $this->get_plugin_from_path( $phpmailer_filename );
+				if ( null === $plugin ) {
+					return '<div class="notice inline notice-warning"><p>WordPress is sending mail using <em>' . $phpmailer_filename . '</em>.</p></div>';
+				}
+
+				$notice_type = 'warning';
+				if ( stristr( $plugin['Name'], ' ses' )
+					|| stristr( $plugin['Description'], ' ses' ) ) {
+					$notice_type = 'success';
+				}
+
+				return '<div class="notice inline notice-' . $notice_type . '"><p>WordPress is sending mail using <em>' . $plugin['Name'] . '</em> plugin.</p></div>';
+			}
+		}
+
+		return '<div class="notice inline notice-error"><p>Email is being sent using WordPress\'s built in <code>wp_mail()</code> function. It is probably not being sent using AWS SES.</p></div>';
+
+	}
+
+	/**
+	 * Given a filename, figure out what plugin it is from.
+	 *
+	 * @param $filename
+	 *
+	 * @return array|null
+	 */
+	private function get_plugin_from_path( $filename ) {
+
+		// If the file is outside the plugins dir, whats's up? MU plugins?
+		if ( ! stristr( $filename, WP_PLUGIN_DIR ) ) {
+			return null;
+		}
+
+		$plugin_file = trim( substr( $filename, strlen( realpath( WP_PLUGIN_DIR ) ) ), '/' );
+
+		$plugins = get_plugins();
+
+		if ( array_key_exists( $plugin_file, $plugins ) ) {
+
+			return $plugins[ $plugin_file ];
+		}
+
+		$plugin_slug = substr( $plugin_file, 0, strpos( $plugin_file, '/' ) );
+
+		foreach ( $plugins as $file => $plugin ) {
+
+			if ( stristr( $file, $plugin_slug ) ) {
+				return $plugin;
+			}
+		}
+
+		return null;
+	}
 }

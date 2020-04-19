@@ -11,6 +11,8 @@
 
 				event.preventDefault();
 
+				$('.bounce-test-running-spinner').css('display','inline');
+
 				var data = $('#run-ses-bounce-test-form').serializeArray();
 
 				$.post(ajaxurl, data, function (response) {
@@ -20,8 +22,10 @@
 
 					var noticeType = response.data.notice;
 					var html = response.data.html;
+					var bounceTestId = response.data.bounceTestId;
 
-					var content = '<div class="notice notice-' + noticeType + '">';
+
+					var content = '<div class="notice notice-' + noticeType + '" id="' + bounceTestId + '">';
 
 					content = content + html;
 
@@ -31,7 +35,7 @@
 
 					setTimeout(function () {
 
-						console.log('Fetch results.');
+						fetchResults( bounceTestId );
 
 					}, 1000);
 
@@ -41,6 +45,13 @@
 
 	});
 
+	function fetchResults( bounceTestId ) {
+
+		// nonce
+
+		// Test complete?
+
+	}
 
 
 })( jQuery );

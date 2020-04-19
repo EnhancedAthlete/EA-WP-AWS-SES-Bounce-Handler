@@ -95,15 +95,39 @@ class Ajax extends WPPB_Object {
 
 		$html .= '<p>Test email sent to: <em>' . $bounce_test_email . '</em></p>';
 
-		$result['success']                = true;
-		$result['data']['notice']         = 'info';
-		$result['data']['bounce_test_id'] = $bounce_test_id;
-		$result['data']['html']           = $html;
+		$result['success']              = true;
+		$result['data']['notice']       = 'info';
+		$result['data']['bounceTestId'] = $bounce_test_id;
+		$result['data']['html']         = $html;
 
 		wp_send_json( $result );
 	}
 
+	/**
+	 *
+	 */
 	public function check_ses_bounce_test_result() {
+
+		$result         = array();
+		$result['data'] = array();
+
+		// Verify nonce.
+		if ( ! check_ajax_referer( 'run-ses-bounce-test-form', false, false ) ) {
+
+			$result['success']         = false;
+			$result['data']['message'] = 'Referrer/nonce failure';
+
+			wp_send_json_error( $result, 400 );
+		}
+
+		if ( ! isset( $_POST['bounce_test_id'] ) ) {
+			$result['success']         = false;
+			$result['data']['message'] = 'bounce_test_id not set.';
+
+			wp_send_json_error( $result, 400 );
+		}
+
+		$test_id = intval( $_POST['bounce_test_id'] );
 
 		// Get user roles
 
@@ -114,4 +138,7 @@ class Ajax extends WPPB_Object {
 		// Delete test data button (not automatically, so admins can view the order, user...)
 	}
 
+	public function delete_test_data() {
+
+	}
 }

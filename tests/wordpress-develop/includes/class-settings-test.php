@@ -46,22 +46,4 @@ class Settings_Test extends \WP_UnitTestCase {
 
 	}
 
-	/**
-	 * Verify the defined constants are correct (I often misspell).
-	 */
-	public function test_bounces_const() {
-
-		$this->assertSame( 'ea-wp-aws-ses-bounce-handler-bounces-arn', Settings_Interface::BOUNCES_ARN );
-	}
-
-
-	/**
-	 * Verify the defined constants are correct (I often misspell).
-	 */
-	public function test_complaints_const() {
-
-		$this->assertSame( 'ea-wp-aws-ses-bounce-handler-complaints-arn', Settings_Interface::COMPLAINTS_ARN );
-	}
-
-
 }

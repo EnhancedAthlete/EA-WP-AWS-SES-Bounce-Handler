@@ -187,9 +187,7 @@ class SNS extends WPPB_Object {
 	 */
 	public function handle_bounces( $notification_topic_arn, $headers, $body, $message ) {
 
-		$bounce_arn = $this->settings->get_bounces_arn();
-
-		if ( $bounce_arn !== $notification_topic_arn || 'Bounce' !== $message->notificationType ) {
+		if ( 'Bounce' !== $message->notificationType ) {
 			return;
 		}
 
@@ -227,9 +225,7 @@ class SNS extends WPPB_Object {
 	 */
 	public function handle_complaints( $notification_topic_arn, $headers, $body, $message ) {
 
-		$complaints_arn = $this->settings->get_complaints_arn();
-
-		if ( $complaints_arn !== $notification_topic_arn || 'Complaint' !== $message->notificationType ) {
+		if ( 'Complaint' !== $message->notificationType ) {
 			return;
 		}
 

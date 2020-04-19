@@ -22,20 +22,6 @@ namespace EA_WP_AWS_SES_Bounce_Handler\includes;
 class Settings implements Settings_Interface {
 
 	/**
-	 * The ARN to be listened to for bounce reports.
-	 *
-	 * @var string
-	 */
-	private $bounces_arn;
-
-	/**
-	 * The ARN to be listened to for complaint reports.
-	 *
-	 * @var string
-	 */
-	private $complaints_arn;
-
-	/**
 	 * List of ARNs which have successfully been confirmed with AWS SNS.
 	 *
 	 * @var string[]
@@ -49,28 +35,7 @@ class Settings implements Settings_Interface {
 	 */
 	public function __construct() {
 
-		$this->bounces_arn    = get_option( self::BOUNCES_ARN );
-		$this->complaints_arn = get_option( self::COMPLAINTS_ARN );
-
 		$this->confirmed_arns = get_option( self::CONFIRMED_ARNS, array() );
-	}
-
-	/**
-	 * Returns the AWS resource identifier used by SNS for the bounces topic.
-	 *
-	 * @return string
-	 */
-	public function get_bounces_arn() {
-		return $this->bounces_arn;
-	}
-
-	/**
-	 * Returns the AWS resource identifier used by SNS for the complaints topic.
-	 *
-	 * @return string
-	 */
-	public function get_complaints_arn() {
-		return $this->complaints_arn;
 	}
 
 	/**

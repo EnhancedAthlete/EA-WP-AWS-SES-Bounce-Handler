@@ -6,3 +6,17 @@
 .ea-wp-aws-ses-bounce-handler ul {
     list-style: inside;
 }
+
+.ea-wp-aws-ses-bounce-handler .bounce-handler-endpoint {
+    background: transparent;
+    border: none;
+    width: 50%;
+}
+
+.ea-wp-aws-ses-bounce-handler .bounce-test-running-spinner {
+    width: 20px;
+    height: 20px;
+    padding: 5px;
+    margin-left: 5px;
+    display:none;
+}
