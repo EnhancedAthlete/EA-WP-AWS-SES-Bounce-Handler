@@ -15,23 +15,13 @@ use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
 use WP_User;
 
 /**
- * Register Bounced Email role and hook into `handle_ses_bounce` to add it to user accounts.
+ * Hook into `handle_ses_bounce` to add Bounced Email role it to user accounts.
  *
  * Class WordPress
  *
  * @package EA_WP_AWS_SES_Bounce_Handler\integrations
  */
 class WordPress extends WPPB_Object {
-
-	/**
-	 * Register the Bounced Email WordPress user role.
-	 * The role has no capabilities.
-	 *
-	 * @hooked init
-	 */
-	public function add_bounced_role_to_wordpress() {
-		add_role( 'Bounced Email', 'Bounced Email' );
-	}
 
 	/**
 	 * Add Bounced Email role to user so it can be filtered on the Users admin page.
@@ -55,7 +45,7 @@ class WordPress extends WPPB_Object {
 			return;
 		}
 
-		$user->add_role( 'Bounced Email' );
+		$user->add_role( 'bounced_email' );
 	}
 
 }

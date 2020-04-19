@@ -1,4 +1,4 @@
-[![WordPress tested 5.4](https://img.shields.io/badge/WordPress-v5.2%20tested-0073aa.svg)](https://github.com/EnhancedAthlete/ea-wp-aws-ses-bounce-handler) [![PHPCS WPCS](https://img.shields.io/badge/PHPCS-WordPress%20Coding%20Standards-8892BF.svg)](https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards) [![License: GPL v2 or later](https://img.shields.io/badge/License-GPL%20v2%20or%20later-bd0000.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) [![PHPUnit ](https://img.shields.io/badge/PHPUnit-15%25%20coverage-dc3545.svg)]()
+[![WordPress tested 5.4](https://img.shields.io/badge/WordPress-v5.4%20tested-0073aa.svg)](https://github.com/EnhancedAthlete/ea-wp-aws-ses-bounce-handler) [![PHPCS WPCS](https://img.shields.io/badge/PHPCS-WordPress%20Coding%20Standards-8892BF.svg)](https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards) [![License: GPL v2 or later](https://img.shields.io/badge/License-GPL%20v2%20or%20later-bd0000.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) [![PHPUnit ](https://img.shields.io/badge/PHPUnit-30%25%20coverage-dc3545.svg)]()
 
 # AWS SES Bounce Handler
 

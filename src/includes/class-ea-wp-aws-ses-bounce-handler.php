@@ -187,7 +187,6 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 		$this->loader->add_action( 'handle_ses_complaint', $newsletter_integration, 'mark_as_complaint', 10, 3 );
 
 		$wordpress_integration = new WordPress( $this->get_plugin_name(), $this->get_version() );
-		$this->loader->add_action( 'init', $wordpress_integration, 'add_bounced_role_to_wordpress' );
 		$this->loader->add_action( 'handle_ses_bounce', $wordpress_integration, 'add_bounced_role_to_user', 10, 3 );
 
 	}
