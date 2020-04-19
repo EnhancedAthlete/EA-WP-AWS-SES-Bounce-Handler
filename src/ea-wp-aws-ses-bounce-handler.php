@@ -3,7 +3,7 @@
  * A WordPress plugin to unsubscribe users from email lists when AWS SES sends a bounce or complaint report.
  *
  * @link              https://BrianHenry.ie
- * @since             1.0.0
+ * @since             1.2.0
  * @package           EA_WP_AWS_SES_Bounce_Handler
  *
  * @wordpress-plugin
