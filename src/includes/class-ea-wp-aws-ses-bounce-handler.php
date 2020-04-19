@@ -146,8 +146,6 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 		$this->settings_page = $plugin_settings_page = new Settings_Page( $this->get_plugin_name(), $this->get_version(), $this->settings );
 
 		$this->loader->add_action( 'admin_menu', $plugin_settings_page, 'add_settings_page' );
-		$this->loader->add_action( 'admin_init', $plugin_settings_page, 'setup_sections' );
-		$this->loader->add_action( 'admin_init', $plugin_settings_page, 'setup_fields' );
 
 		$this->plugins_page = $plugins_page = new Plugins_Page( $this->get_plugin_name(), $this->get_version() );
 

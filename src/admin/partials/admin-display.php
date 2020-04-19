@@ -38,14 +38,6 @@
 		<li>Fires actions <code>handle_ses_bounce</code> and <code>handle_ses_complaint</code></li>
 	</ul>
 
-	<form method="POST" action="options.php">
-		<?php
-		settings_fields( 'ea-wp-aws-ses-bounce-handler' );
-		do_settings_sections( 'ea-wp-aws-ses-bounce-handler' );
-		submit_button();
-		?>
-	</form>
-
 	<p><a target="_blank" href="https://github.com/EnhancedAthlete/ea-wp-aws-ses-bounce-handler">View code on GitHub</a> &#x2022; <a target="_blank" href="https://BrianHenry.ie">Plugin by BrianHenryIE</a> &#x2022; <a target="_blank" href="https://EnhancedAthlete.com">Plugin for Enhanced Athlete</a></p>
 
 </div>
