@@ -38,9 +38,13 @@ class Admin extends WPPB_Object {
 
 	}
 	/**
+	 * Register the JavaScript for the admin area.
 	 *
+	 * @since    1.2.0
 	 */
+	public function enqueue_scripts() {
 
+		$version = defined( WP_DEBUG ) && WP_DEBUG ? time() : $this->get_version();
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ea-wp-aws-ses-bounce-handler-admin.js', array( 'jquery' ), $version, false );
 	}

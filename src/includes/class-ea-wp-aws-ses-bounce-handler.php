@@ -15,6 +15,7 @@
 namespace EA_WP_AWS_SES_Bounce_Handler\includes;
 
 use EA_WP_AWS_SES_Bounce_Handler\admin\Admin;
+use EA_WP_AWS_SES_Bounce_Handler\admin\Ajax;
 use EA_WP_AWS_SES_Bounce_Handler\admin\Plugins_Page;
 use EA_WP_AWS_SES_Bounce_Handler\admin\Settings_Page;
 use EA_WP_AWS_SES_Bounce_Handler\integrations\Newsletter;
@@ -81,6 +82,21 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 	public $settings_page;
 
 	/**
+	 * Public variable for accessing Admin object.
+	 *
+	 * @var Admin
+	 */
+	public $admin;
+	/**
+	 * @var Ajax
+	 */
+	public $ajax;
+	/**
+	 * @var Plugins_Page
+	 */
+	public $plugins_page;
+
+	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
@@ -138,21 +154,21 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Admin( $this->get_plugin_name(), $this->get_version() );
+		$this->admin = new Admin( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'admin_enqueue_scripts', $this->admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $this->admin, 'enqueue_scripts' );
 
-		$this->loader->add_action( 'admin_notices', $plugin_admin, 'requirements_notice' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		$this->settings_page = new Settings_Page( $this->get_plugin_name(), $this->get_version(), $this->settings );
+		$this->loader->add_action( 'admin_menu', $this->settings_page, 'add_settings_page' );
 
-		$this->settings_page = $plugin_settings_page = new Settings_Page( $this->get_plugin_name(), $this->get_version(), $this->settings );
+		$this->ajax = new Ajax( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'wp_ajax_run_ses_bounce_test', $this->ajax, 'run_ses_bounce_test' );
+		$this->loader->add_action( 'wp_ajax_fetch_test_results', $this->ajax, 'fetch_test_results' );
 
-		$this->loader->add_action( 'admin_menu', $plugin_settings_page, 'add_settings_page' );
-
-		$this->plugins_page = $plugins_page = new Plugins_Page( $this->get_plugin_name(), $this->get_version() );
-
-		$plugin_basename = $this->get_plugin_name() . '/' . $this->get_plugin_name() . '.php';
-
-		$this->loader->add_filter( 'plugin_action_links_' . $plugin_basename, $plugins_page, 'action_links' );
-		$this->loader->add_filter( 'plugin_row_meta', $plugins_page, 'row_meta', 20, 4 );
+		$this->plugins_page = new Plugins_Page( $this->get_plugin_name(), $this->get_version() );
+		$plugin_basename    = $this->get_plugin_name() . '/' . $this->get_plugin_name() . '.php';
+		$this->loader->add_filter( 'plugin_action_links_' . $plugin_basename, $this->plugins_page, 'action_links' );
+		$this->loader->add_filter( 'plugin_row_meta', $this->plugins_page, 'row_meta', 20, 4 );
 	}
 
 	/**
