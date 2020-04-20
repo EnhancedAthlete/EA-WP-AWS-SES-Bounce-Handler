@@ -50,7 +50,7 @@ class Settings implements Settings_Interface {
 	/**
 	 * Add an ARN string to the list of confirmed ARNs and save the option.
 	 *
-	 * @param string $arn AWS SNS ARN
+	 * @param string $arn AWS SNS ARN.
 	 */
 	public function set_confirmed_arn( $arn ) {
 		$this->confirmed_arns[] = $arn;
