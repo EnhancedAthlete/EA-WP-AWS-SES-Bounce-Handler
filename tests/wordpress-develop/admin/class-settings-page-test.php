@@ -1,18 +1,29 @@
 <?php
+/**
+ * Tests for the wp-admin Settnigs page.
+ *
+ * @package ea-wp-aws-ses-bounce-handler
+ * @author Brian Henry <BrianHenryIE@gmail.com>
+ */
 
 namespace EA_WP_AWS_SES_Bounce_Handler\admin;
 
 use EA_WP_AWS_SES_Bounce_Handler\includes\Settings;
 
+/**
+ * Tests the wp_mail function introspection.
+ *
+ * Class Settings_Page_Test
+ *
+ * @package EA_WP_AWS_SES_Bounce_Handler\admin
+ */
 class Settings_Page_Test extends \WP_UnitTestCase {
 
-
 	/**
+	 * Test the code that detects what class/plugin is being used to send mail from WordPress.
 	 * This should tell us the WordPress core pluggable.php.
 	 */
 	public function test_get_wp_mail_info() {
-
-		// $this->markTestIncomplete();
 
 		$settings = new Settings();
 
@@ -26,6 +37,5 @@ class Settings_Page_Test extends \WP_UnitTestCase {
 
 		$this->assertTrue( 1 === preg_match( $pattern, $wp_mail_info ) );
 	}
-
 
 }
