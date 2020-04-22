@@ -182,8 +182,6 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 
 		$this->sns = new SNS( $this->get_plugin_name(), $this->get_version(), $this->settings );
 		$this->loader->add_action( 'rest_api_init', $this->sns, 'add_ea_aws_ses_rest_endpoint' );
-		$this->loader->add_filter( 'ea_aws_sns_notification', $this->sns, 'handle_complaints', 10, 5 );
-		$this->loader->add_filter( 'ea_aws_sns_notification', $this->sns, 'handle_bounces', 10, 5 );
 
 	}
 

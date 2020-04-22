@@ -23,18 +23,6 @@
     {
       "url": "https://github.com/BrianHenryIE/composer-phpstorm",
       "type": "git"
-    },
-    {
-      "type": "package",
-      "package": {
-        "name": "enhancedathlete/ea-wp-aws-sns-client-rest-endpoint",
-        "version": "1.0",
-        "source": {
-          "url": "https://github.com/EnhancedAthlete/EA-WP-AWS-SNS-Client-REST-Endpoint",
-          "type": "git",
-          "reference": "master"
-        }
-      }
     }
   ],
   "require": {
@@ -43,17 +31,16 @@
   },
   "require-dev": {
     "brianhenryie/composer-phpstorm": "dev-master",
-    "cweagans/composer-patches": "~1.0",
+    "cweagans/composer-patches": "^1.0",
     "coenjacobs/mozart": "0.5.1",
     "wordpress/wordpress": ">=5.4",
     "kporras07/composer-symlinks": "dev-master",
-    "phpunit/phpunit"     : ">=7.5",
+    "phpunit/phpunit"     : "^7.5",
     "10up/wp_mock": "0.4.2",
     "phpunit/phpcov": "^5.0",
     "phpcompatibility/phpcompatibility-wp": "*",
     "dealerdirect/phpcodesniffer-composer-installer": "*",
     "wp-coding-standards/wpcs": "*",
-    "enhancedathlete/ea-wp-aws-sns-client-rest-endpoint":"*",
     "wpackagist-plugin/newsletter":"*",
     "woocommerce/woocommerce": ">4"
   },
@@ -73,8 +60,7 @@
     },
     "symlinks": {
       "src": "wp-content/plugins/ea-wp-aws-ses-bounce-handler",
-      "vendor/wordpress/wordpress/src": "wordpress",
-      "vendor/enhancedathlete/ea-wp-aws-sns-client-rest-endpoint/trunk": "wp-content/plugins/ea-wp-aws-sns-client-rest-endpoint"
+      "vendor/wordpress/wordpress/src": "wordpress"
     },
     "phpstorm": {
       "exclude_folders": {

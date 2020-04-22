@@ -42,8 +42,6 @@ function _manually_load_plugin() {
 	// Assumes the plugin's directory name is the same as its filename.
 	$plugin_name = basename( $project_root_dir );
 
-	require_once $project_root_dir . '/wp-content/plugins/ea-wp-aws-sns-client-rest-endpoint/ea-wp-aws-sns-client-rest-endpoint.php';
-
 	require_once $project_root_dir . '/src/' . $plugin_name . '.php';
 
 }
