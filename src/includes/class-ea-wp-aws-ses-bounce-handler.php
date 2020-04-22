@@ -15,12 +15,14 @@
 namespace EA_WP_AWS_SES_Bounce_Handler\includes;
 
 use EA_WP_AWS_SES_Bounce_Handler\admin\Admin;
+use EA_WP_AWS_SES_Bounce_Handler\admin\Ajax;
 use EA_WP_AWS_SES_Bounce_Handler\admin\Plugins_Page;
 use EA_WP_AWS_SES_Bounce_Handler\admin\Settings_Page;
 use EA_WP_AWS_SES_Bounce_Handler\integrations\Newsletter;
+use EA_WP_AWS_SES_Bounce_Handler\integrations\SES_Bounce_Handler_Integration_Interface;
 use EA_WP_AWS_SES_Bounce_Handler\integrations\WooCommerce;
 use EA_WP_AWS_SES_Bounce_Handler\integrations\WordPress;
-use EA_WP_AWS_SES_Bounce_Handler\sns\SNS;
+use EA_WP_AWS_SES_Bounce_Handler\rest\SNS;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Loader_Interface;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
 
@@ -81,6 +83,27 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 	public $settings_page;
 
 	/**
+	 * Public variable for accessing Admin object.
+	 *
+	 * @var Admin
+	 */
+	public $admin;
+
+	/**
+	 * Make available to other code the class that handles the AJAX functions.
+	 *
+	 * @var Ajax
+	 */
+	public $ajax;
+
+	/**
+	 * Make accessible the plugins page.
+	 *
+	 * @var Plugins_Page
+	 */
+	public $plugins_page;
+
+	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
@@ -138,23 +161,22 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Admin( $this->get_plugin_name(), $this->get_version() );
+		$this->admin = new Admin( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'admin_enqueue_scripts', $this->admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $this->admin, 'enqueue_scripts' );
 
-		$this->loader->add_action( 'admin_notices', $plugin_admin, 'requirements_notice' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		$this->settings_page = new Settings_Page( $this->get_plugin_name(), $this->get_version(), $this->settings );
+		$this->loader->add_action( 'admin_menu', $this->settings_page, 'add_settings_page' );
 
-		$this->settings_page = $plugin_settings_page = new Settings_Page( $this->get_plugin_name(), $this->get_version(), $this->settings );
+		$this->ajax = new Ajax( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'wp_ajax_run_ses_bounce_test', $this->ajax, 'run_ses_bounce_test' );
+		$this->loader->add_action( 'wp_ajax_fetch_test_results', $this->ajax, 'fetch_test_results' );
+		$this->loader->add_action( 'wp_ajax_delete_test_data', $this->ajax, 'delete_test_data' );
 
-		$this->loader->add_action( 'admin_menu', $plugin_settings_page, 'add_settings_page' );
-		$this->loader->add_action( 'admin_init', $plugin_settings_page, 'setup_sections' );
-		$this->loader->add_action( 'admin_init', $plugin_settings_page, 'setup_fields' );
-
-		$this->plugins_page = $plugins_page = new Plugins_Page( $this->get_plugin_name(), $this->get_version() );
-
-		$plugin_basename = $this->get_plugin_name() . '/' . $this->get_plugin_name() . '.php';
-
-		$this->loader->add_filter( 'plugin_action_links_' . $plugin_basename, $plugins_page, 'action_links' );
-		$this->loader->add_filter( 'plugin_row_meta', $plugins_page, 'row_meta', 20, 4 );
+		$this->plugins_page = new Plugins_Page( $this->get_plugin_name(), $this->get_version() );
+		$plugin_basename    = $this->get_plugin_name() . '/' . $this->get_plugin_name() . '.php';
+		$this->loader->add_filter( 'plugin_action_links_' . $plugin_basename, $this->plugins_page, 'action_links' );
+		$this->loader->add_filter( 'plugin_row_meta', $this->plugins_page, 'row_meta', 20, 4 );
 	}
 
 	/**
@@ -166,11 +188,8 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 	 */
 	private function define_sns_hooks() {
 
-		$this->sns = $plugin_sns = new SNS( $this->get_plugin_name(), $this->get_version(), $this->settings );
-
-		$this->loader->add_filter( 'ea_aws_sns_notification', $plugin_sns, 'handle_complaints', 10, 5 );
-		$this->loader->add_filter( 'ea_aws_sns_notification', $plugin_sns, 'handle_bounces', 10, 5 );
-
+		$this->sns = new SNS( $this->get_plugin_name(), $this->get_version(), $this->settings );
+		$this->loader->add_action( 'rest_api_init', $this->sns, 'add_ea_aws_ses_rest_endpoint' );
 	}
 
 	/**
@@ -178,17 +197,53 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 	 */
 	private function define_integration_hooks() {
 
-		$woocommerce_integration = new WooCommerce( $this->get_plugin_name(), $this->get_version() );
-		$this->loader->add_action( 'handle_ses_bounce', $woocommerce_integration, 'mark_order_email_bounced', 10, 3 );
-		$this->loader->add_action( 'admin_notices', $woocommerce_integration, 'display_bounce_notification' );
+		$built_in_integrations                = array();
+		$built_in_integrations['WordPress']   = new WordPress( $this->get_plugin_name(), $this->get_version() );
+		$built_in_integrations['WooCommerce'] = new WooCommerce( $this->get_plugin_name(), $this->get_version() );
+		$built_in_integrations['Newsletter']  = new Newsletter( $this->get_plugin_name(), $this->get_version() );
 
-		$newsletter_integration = new Newsletter( $this->get_plugin_name(), $this->get_version() );
-		$this->loader->add_action( 'handle_ses_bounce', $newsletter_integration, 'mark_as_bounced', 10, 3 );
-		$this->loader->add_action( 'handle_ses_complaint', $newsletter_integration, 'mark_as_complaint', 10, 3 );
+		$this->integrations = $built_in_integrations;
 
-		$wordpress_integration = new WordPress( $this->get_plugin_name(), $this->get_version() );
-		$this->loader->add_action( 'init', $wordpress_integration, 'add_bounced_role_to_wordpress' );
-		$this->loader->add_action( 'handle_ses_bounce', $wordpress_integration, 'add_bounced_role_to_user', 10, 3 );
+		$this->loader->add_filter( 'ea_wp_aws_ses_bounce_handler_integrations', $this, 'add_integrations' );
+		$this->loader->add_action( 'plugins_loaded', $this, 'init_integrations' );
+	}
+
+	/**
+	 * References to the built in integrations' objects.
+	 *
+	 * @var SES_Bounce_Handler_Integration_Interface[]
+	 */
+	private $integrations = array();
+
+	/**
+	 * Make available the built-in integrations.
+	 *
+	 * @hooked ea_wp_aws_ses_bounce_handler_integrations
+	 * @param SES_Bounce_Handler_Integration_Interface[] $integrations WorrdPress, WooCommerce and Newsletter integrations.
+	 *
+	 * @return SES_Bounce_Handler_Integration_Interface[]
+	 */
+	public function add_integrations( $integrations ) {
+		return $integrations + $this->integrations;
+	}
+
+	/**
+	 * Initialize all registered integrations.
+	 *
+	 * @hooked plugins_loaded
+	 */
+	public function init_integrations() {
+
+		$integrations = apply_filters( 'ea_wp_aws_ses_bounce_handler_integrations', array() );
+
+		foreach ( $integrations as $integration ) {
+
+			$integration->init();
+			if ( $integration->is_enabled() ) {
+				add_action( 'handle_ses_bounce', array( $integration, 'handle_ses_bounce' ), 10, 3 );
+				add_action( 'handle_ses_complaint', array( $integration, 'handle_ses_complaint' ), 10, 3 );
+			}
+		}
 
 	}
 

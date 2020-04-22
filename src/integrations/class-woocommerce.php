@@ -13,8 +13,9 @@
 
 namespace EA_WP_AWS_SES_Bounce_Handler\integrations;
 
+use EA_WP_AWS_SES_Bounce_Handler\admin\Bounce_Handler_Test;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
-use WC_Admin_Notices;
+use stdClass;
 use WC_Order;
 
 /**
@@ -24,22 +25,47 @@ use WC_Order;
  *
  * @package EA_WP_AWS_SES_Bounce_Handler\integrations
  */
-class WooCommerce extends WPPB_Object {
+class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_Interface {
 
 	const BOUNCED_META_KEY = 'ea_wp_aws_ses_bounce_hander_bounced';
+
+	/**
+	 * Return a description for the admin UI, explaining a note and notice will be added to orders.
+	 *
+	 * @return string
+	 */
+	public function get_description(): string {
+		return 'Adds a note and notice on orders whose email address bounced';
+	}
+
+	/**
+	 * Add the hook for displaying the order notice.
+	 */
+	public function init(): void {
+		add_action( 'admin_notices', array( $this, 'display_bounce_notification' ) );
+	}
+
+	/**
+	 * Check is WooCommerce installed.
+	 *
+	 * @return bool
+	 */
+	public function is_enabled(): bool {
+		return class_exists( \WooCommerce::class );
+	}
 
 	/**
 	 * Add a note to orders whose email addresses are invalid.
 	 *
 	 * @hooked handle_ses_bounce
 	 *
-	 * @param string $email_address     The email address that has bounced.
-	 * @param object $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
-	 * @param object $message           Parent object of complete notification.
+	 * @param string   $email_address     The email address that has bounced.
+	 * @param stdClass $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
+	 * @param stdClass $message           Parent object of complete notification.
 	 */
-	public function mark_order_email_bounced( $email_address, $bounced_recipient, $message ) {
+	public function handle_ses_bounce( string $email_address, stdClass $bounced_recipient, stdClass $message ): void {
 
-		if ( ! class_exists( \WooCommerce::class ) ) {
+		if ( ! $this->is_enabled() ) {
 			return;
 		}
 
@@ -58,7 +84,102 @@ class WooCommerce extends WPPB_Object {
 
 			$order->save();
 		}
+	}
 
+	/**
+	 * Do nothing.
+	 *
+	 * @hooked handle_ses_complaint
+	 *
+	 * @param string   $email_address The email address which complained about our email.
+	 * @param stdClass $complained_recipient The SES notification the email address was received in.
+	 * @param stdClass $message The SNS notification the SES notification was received in.
+	 */
+	public function handle_ses_complaint( string $email_address, stdClass $complained_recipient, stdClass $message ): void {}
+
+	/**
+	 * Create an order with the bounce simulator email address.
+	 *
+	 * @param Bounce_Handler_Test $test The test orchestrator and configuration.
+	 *
+	 * @return array|void
+	 */
+	public function setup_test( Bounce_Handler_Test $test ): ?array {
+
+		if ( ! $this->is_enabled() ) {
+			return null;
+		}
+
+		$order   = wc_create_order();
+		$address = array(
+			'email' => $test->get_email(),
+		);
+		$order->set_address( $address, 'billing' );
+		$order_bounced_meta_value = $order->get_meta( self::BOUNCED_META_KEY );
+		$order_bounced_meta_value = empty( $order_bounced_meta_value ) ? 'empty' : $order_bounced_meta_value;
+
+		$order_url = admin_url( 'post.php?post=' . $order->get_id() . '&action=edit' );
+
+		$data['wc_order_id']                 = $order->get_id();
+		$data['wc_order_bounced_meta_value'] = $order_bounced_meta_value;
+
+		$html = '<p>WooCommerce <a href="' . $order_url . '">order ' . $order->get_id() . '</a> created with meta key <em>' . self::BOUNCED_META_KEY . '</em> value: <em>' . $order_bounced_meta_value . '</em></p>';
+
+		return array(
+			'data' => $data,
+			'html' => $html,
+		);
+	}
+
+	/**
+	 * Verify the order has metadata added.
+	 *
+	 * @param array $test_data {int: wc_order_id}.
+	 *
+	 * @return array
+	 */
+	public function verify_test( array $test_data ): ?array {
+
+		$order = wc_get_order( intval( $test_data['wc_order_id'] ) );
+
+		$success = false;
+
+		if ( $order instanceof \WC_Order ) {
+
+			$order_bounced_meta_value = $order->get_meta( self::BOUNCED_META_KEY );
+
+			if ( ! empty( $order_bounced_meta_value ) ) {
+
+				$success = true;
+
+				$order_url = admin_url( 'post.php?post=' . $order->get_id() . '&action=edit' );
+
+				$html = '<p>WooCommerce <a href="' . $order_url . '">order ' . $order->get_id() . '</a> found with meta key <em>' . self::BOUNCED_META_KEY . '</em> value: <em>' . $order_bounced_meta_value . '</em></p>';
+
+			}
+			// } else {
+			// Something weird going on.
+		}
+
+		return array(
+			'success' => $success,
+			'html'    => $html,
+		);
+
+	}
+
+	/**
+	 * Delete the order created for the test.
+	 *
+	 * @param array $test_data {int: wc_order_id}.
+	 */
+	public function delete_test_data( array $test_data ): bool {
+
+		if ( isset( $test_data['wc_order_id'] ) && class_exists( \WooCommerce::class ) ) {
+			wp_delete_post( intval( $test_data['wc_order_id'] ) );
+		}
+
+		return true;
 	}
 
 	/**
@@ -70,7 +191,7 @@ class WooCommerce extends WPPB_Object {
 	 */
 	public function display_bounce_notification() {
 
-		if ( ! class_exists( \WooCommerce::class ) ) {
+		if ( ! $this->is_enabled() ) {
 			return;
 		}
 

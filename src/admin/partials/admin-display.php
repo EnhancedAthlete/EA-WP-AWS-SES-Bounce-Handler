@@ -11,6 +11,15 @@
  * @subpackage EA_WP_AWS_SES_Bounce_Handler/admin/partials
  */
 
+use EA_WP_AWS_SES_Bounce_Handler\includes\Settings_Interface;
+
+/**
+ * The plugin Settings class. Repeated here for code completion.
+ *
+ * @var Settings_Interface $settings
+ */
+$settings = $this->settings;
+
 ?>
 
 <div class="wrap ea-wp-aws-ses-bounce-handler">
@@ -19,30 +28,58 @@
 
 	<h3>Marks user accounts and WooCommerce orders for bounced emails; unsubscribes users who mark email as spam.</h3>
 
-	<p>Follow Amazon's <a href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html">Configuring Amazon SNS Notifications for Amazon SES</a> document to set up.</p>
+	<p>Follow Amazon's <a target="_blank" href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html">Configuring Amazon SNS Notifications for Amazon SES</a> document to set up notification SNS topics in <a target="_blank" href="https://console.aws.amazon.com/ses/home?#home:">AWS SES</a> for both your verified domains and email adresses.</p>
+
+	<div>
+	<span style="display: inline-block;">Use endpoint:</span>
+	<div style="display:inline-block;">
+	<div class="bounce-handler-endpoint-text"><?php echo esc_url( $settings->get_endpoint() ); ?></div>
+	<div><input class="bounce-handler-endpoint" value="<?php echo esc_url( $settings->get_endpoint() ); ?>"></div>
+	</div> when configuring the <a target="_blank" href="https://console.aws.amazon.com/sns/v3/home?#/topics">AWS SNS topics</a>. Subscriptions are automatically confirmed when received at this endpoint.
+	</div>
+
+	<h4>Confirmed ARNs:</h4>
+
+	<?php
+
+	if ( empty( $settings->get_confirmed_arns() ) ) {
+		echo '<div class="notice inline notice-error"><p>No SNS ARN subscriptions have been added.</p></div>';
+	}
+
+	foreach ( $settings->get_confirmed_arns() as $arn ) {
+		echo '<div class="notice inline notice-success"><p><a target="_blank" href="' . esc_url( 'https://console.aws.amazon.com/sns/v3/home?#/topic/' . $arn ) . '">' . esc_html( $arn ) . '</a></p></div>';
+	}
+	?>
+
+	<h2>WordPress <code>wp_mail()</code> Status</h2>
+
+	<?php echo wp_kses( $this->get_wp_mail_info(), wp_kses_allowed_html( 'post' ) ); ?>
+
+	<h2>Testing</h2>
+
+	<p>This plugin can test the configuration by creating a test WordPress user, test data for integrated plugins, and sending an email to <em>bounce@simulator.amazonses.com</em>.</p>
+
+	<form id="run-ses-bounce-test-form" action="">
+		<input type="hidden" name="action" value="run_ses_bounce_test" />
+		<?php wp_nonce_field( 'run-ses-bounce-test-form' ); ?>
+		<input class="button" id="run-ses-bounce-test-button" type="submit" value="Run Test" />
+		<img class="bounce-test-running-spinner" alt="Is bounce test running spinner" src="<?php echo esc_url( admin_url( '/images/spinner-2x.gif' ) ); ?>" />
+	</form>
+
+	<div id="run-ses-bounce-test-response"></div>
+
+
+	<h2>Integrations:</h2>
 
 	<ul >
-		<li>WordPress: adds <a href="<?php echo esc_url( admin_url( 'users.php?role=Bounced+Email' ) ); ?>">Bounced Email</a> role to users</li>
-		<li>WooCommerce: adds a note and notice on orders whose email address bounced</li>
-		<li>
 		<?php
-		if ( class_exists( TNP::class ) ) {
-			echo '<a href="' . esc_url( admin_url( 'admin.php?page=newsletter_users_index' ) ) . '">The Newsletter plugin</a>';
-		} else {
-			echo '<a target="_blank" href="https://wordpress.org/plugins/newsletter">The Newsletter plugin</a>';
+		$integrations = $settings->get_integrations();
+		foreach ( $integrations as $name => $integration ) {
+			echo '<li>' . esc_html( $name ) . ': ' . wp_kses( $integration->get_description(), wp_kses_allowed_html( 'data' ) ) . '</li>' . "\n";
 		}
 		?>
-			: Marks users as bounced and unsubscribes complaints</li>
 		<li>Fires actions <code>handle_ses_bounce</code> and <code>handle_ses_complaint</code></li>
 	</ul>
-
-	<form method="POST" action="options.php">
-		<?php
-		settings_fields( 'ea-wp-aws-ses-bounce-handler' );
-		do_settings_sections( 'ea-wp-aws-ses-bounce-handler' );
-		submit_button();
-		?>
-	</form>
 
 	<p><a target="_blank" href="https://github.com/EnhancedAthlete/ea-wp-aws-ses-bounce-handler">View code on GitHub</a> &#x2022; <a target="_blank" href="https://BrianHenry.ie">Plugin by BrianHenryIE</a> &#x2022; <a target="_blank" href="https://EnhancedAthlete.com">Plugin for Enhanced Athlete</a></p>
 

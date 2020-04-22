@@ -5,6 +5,7 @@ scratch*
 vendor/*
 releases
 wp-content
+*.zip
 
 wordpress
 src/vendor/

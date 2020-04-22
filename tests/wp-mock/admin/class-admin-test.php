@@ -4,7 +4,7 @@
  *
  * @see Admin
  *
- * @package bh-wp-autologin-urls
+ * @package ea-wp-aws-ses-bounce-handler
  * @author Brian Henry <BrianHenryIE@gmail.com>
  */
 
@@ -65,43 +65,4 @@ class Admin_Test extends \WP_Mock\Tools\TestCase {
 		$this->assertFileExists( $css_file );
 	}
 
-	/**
-	 * Verifies enqueue_scripts() calls wp_enqueue_script() with appropriate parameters.
-	 * Verifies the .js file exists.
-	 *
-	 * @see Admin::enqueue_scripts()
-	 * @see wp_enqueue_script()
-	 */
-	public function test_enqueue_scripts() {
-
-		global $plugin_root_dir;
-
-		// Return any old url.
-		\WP_Mock::userFunction(
-			'plugin_dir_url',
-			array(
-				'return' => $plugin_root_dir . '/admin/',
-			)
-		);
-
-		$handle    = $this->plugin_name;
-		$src       = $plugin_root_dir . '/admin/js/ea-wp-aws-ses-bounce-handler-admin.js';
-		$deps      = array( 'jquery' );
-		$ver       = $this->version;
-		$in_footer = true;
-
-		\WP_Mock::userFunction(
-			'wp_enqueue_script',
-			array(
-				'times' => 1,
-				'args'  => array( $handle, $src, $deps, $ver, $in_footer ),
-			)
-		);
-
-		$ea_wp_aws_ses_bounce_handler_admin = new Admin( $this->plugin_name, $this->version );
-
-		$ea_wp_aws_ses_bounce_handler_admin->enqueue_scripts();
-
-		$this->assertFileExists( $src );
-	}
 }

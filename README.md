@@ -1,8 +1,28 @@
-[![WordPress tested 5.4](https://img.shields.io/badge/WordPress-v5.2%20tested-0073aa.svg)](https://github.com/EnhancedAthlete/ea-wp-aws-ses-bounce-handler) [![PHPCS WPCS](https://img.shields.io/badge/PHPCS-WordPress%20Coding%20Standards-8892BF.svg)](https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards) [![License: GPL v2 or later](https://img.shields.io/badge/License-GPL%20v2%20or%20later-bd0000.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) [![PHPUnit ](https://img.shields.io/badge/PHPUnit-15%25%20coverage-dc3545.svg)]()
+[![WordPress tested 5.4](https://img.shields.io/badge/WordPress-v5.4%20tested-0073aa.svg)](https://github.com/EnhancedAthlete/ea-wp-aws-ses-bounce-handler) [![PHPCS WPCS](https://img.shields.io/badge/PHPCS-WordPress%20Coding%20Standards-8892BF.svg)](https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards) [![PHPUnit ](https://img.shields.io/badge/PHPUnit-30%25%20coverage-dc3545.svg)]()
 
 # AWS SES Bounce Handler
 
 A WordPress plugin to unsubscribe users from email lists when AWS SES sends a bounce or complaint report.
+
+## Overview
+
+### Integrations
+
+#### WordPress
+
+![WordPress Users List](./assets/screenshot-3.png "WordPress Users List")
+
+#### WooCommerce
+
+![WooCommerce Notice](./assets/screenshot-2.png "WooCommerce Notice")
+
+#### The Newsletter Plugin
+
+> Newsletter is a real newsletter and email marketing system for your WordPress blog: perfect for list building, you can easily create, send and track e-mails, headache-free.
+
+Bounced emails get deleted from lists and complaints get unsubscribed.
+
+[Plugin on WordPress.org](https://wordpress.org/plugins/newsletter/) • [API documentation](https://www.thenewsletterplugin.com/documentation/newsletter-api)
 
 ## Overview
 
@@ -29,31 +49,20 @@ This plugin parses the bounce and complaint notifications, adds the "Bounced Ema
 ## Installation
 
 * Download the [latest release from GitHub](https://github.com/EnhancedAthlete/EA-WP-AWS-SNS-Client-REST-Endpoint/releases)
-* Install required [EA WP AWS SNS Client REST Endpoint](https://github.com/EnhancedAthlete/ea-wp-aws-sns-client-rest-endpoint) plugin
 * Follow Amazon's [Configuring Amazon SNS Notifications for Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html) document
-* Subscribe to the SNS topics with `<https://your-website.com>/wp-json/ea/v1/aws-sns/`
-* Confirm the subscriptions in WordPress admin dashboard
-* Add the subscriptions in this plugin's settings
-
+* Subscribe to the SNS topics using the endpoint in the settings page
+ 
 ![Settings Page](./assets/screenshot-1.png "Settings Page")
 
-## Integration
+## Verification
 
-### WordPress
+The plugin's settings page can set up test data and send a test email to _bounce@simulator.amazonses.com_ (see: [Testing Email Sending in Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mailbox-simulator.html)), allowing you to view the sample user/order/subscriber after receiving a bounce notification.
 
-![WordPress Users List](./assets/screenshot-3.png "WordPress Users List")
 
-### WooCommerce
+NB: When testing on your staging site, that must also be registered in SNS. 
 
-![WooCommerce Notice](./assets/screenshot-2.png "WooCommerce Notice")
+![Testing](./assets/screenshot-4.png "Testing")
 
-### The Newsletter Plugin
-
-> Newsletter is a real newsletter and email marketing system for your WordPress blog: perfect for list building, you can easily create, send and track e-mails, headache-free.
-
-Bounced emails get deleted from lists and complaints get unsubscribed.
-
-[Plugin on WordPress.org](https://wordpress.org/plugins/newsletter/) • [API documentation](https://www.thenewsletterplugin.com/documentation/newsletter-api)
 
 ## API
 
@@ -81,24 +90,30 @@ function my_bounce_handler( $email_address, $bounced_recipient, $message ) {
 
 Also `handle_ses_complaint`.
 
-## Testing
+A PHP interface exists for integrations to also perfom bounce tests on the settings page.
 
-[Testing Email Sending in Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mailbox-simulator.html)
+```
+add_filter( 'ea_wp_aws_ses_bounce_handler_integrations', 'add_my_integration, 10, 1);
 
-## Develop
+/**
+ * @var SES_Bounce_Handler_Integration_Interface[] $integrrations Other registered integrations.
+ */
+function add_my_integration( $integrations ) {
+
+	$integrations[ 'MyIntegrationName' ] = new class() implements SES_Bounce_Handler_Integration_Interface {
+		...
+	};
+	
+	return $integrations;
+}
+```
+
+## Development
 
 See [BrianHenryIE/wordpress-plugin-boilerplate](https://github.com/brianhenryie/wordpress-plugin-boilerplate) repo for developer notes.
-
-## TODO
-
-* A button to create a user for bounce@simulator.amazonses.com and send a test email. 
 
 ## Acknowledgements
 
 Built by [Brian Henry](https://BrianHenry.ie) for:
 
 [![Enhanced Athlete](./assets/Enhanced_Athlete.png "Enhanced Athlete")](https://EnhancedAthlete.com)
-
-## Licence
-
-GPLv2 or later.

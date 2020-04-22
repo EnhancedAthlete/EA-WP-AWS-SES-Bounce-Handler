@@ -47,9 +47,9 @@ class Settings_Page extends WPPB_Object {
 	}
 
 	/**
-	 * Add the Autologin URLs settings menu-item/page as a submenu-item of the Settings menu.
+	 * Add the AWS SES Bounce Handler settings menu-item/page as a submenu-item of the Settings menu.
 	 *
-	 * /wp-admin/options-general.php?page=bh-wp-autologin-urls
+	 * /wp-admin/options-general.php?page=ea-wp-aws-ses-bounce-handler
 	 *
 	 * @hooked admin_menu
 	 */
@@ -73,101 +73,102 @@ class Settings_Page extends WPPB_Object {
 	}
 
 	/**
-	 * Register the one settings section with WordPress.
-	 *
-	 * @hooked admin_init
+	 * Figure out if WP_Mail is being overridden.
 	 */
-	public function setup_sections() {
+	public function get_wp_mail_info() {
 
-		$settings_page_slug_name = $this->plugin_name;
+		$wp_mail_reflector = new \ReflectionFunction( 'wp_mail' );
+		$wp_mail_filename  = $wp_mail_reflector->getFileName();
 
-		add_settings_section(
-			'default',
-			'Settings',
-			null,
-			$settings_page_slug_name
-		);
+		$built_in_wp_mail_filename = 'wp-includes/pluggable.php';
+
+		// If wp_mail has been overridden.
+		if ( substr( $wp_mail_filename, - 1 * strlen( $built_in_wp_mail_filename ) ) !== $built_in_wp_mail_filename ) {
+
+			$plugin = $this->get_plugin_from_path( $wp_mail_filename );
+
+			if ( null === $plugin ) {
+				return '<div class="notice inline notice-warning"><p>WordPress is sending mail using <em>' . $wp_mail_filename . '</em>.</p></div>';
+			}
+
+			$notice_type = 'warning';
+			if ( stristr( $plugin['Name'], ' ses' )
+				|| stristr( $plugin['Description'], ' ses' ) ) {
+				$notice_type = 'success';
+			}
+
+			return '<div class="notice inline notice-' . $notice_type . '"><p>WordPress is sending mail using <em>' . $plugin['Name'] . '</em> plugin.</p></div>';
+
+		}
+
+		// If phpmailer has been set, check is it the built-in WordPress class.
+		global $phpmailer;
+		if ( ! empty( $phpmailer ) ) {
+			try {
+				$phpmailer_reflector = new \ReflectionClass( get_class( $phpmailer ) );
+
+			} catch ( \ReflectionException $e ) {
+				return '<div class="notice inline notice-error"><p>Error checking PHPMailer class: ' . $e->getMessage() . ' – ' . get_class( $phpmailer ) . '</p></div>';
+
+			}
+			$phpmailer_filename = $phpmailer_reflector->getFileName();
+
+			$built_in_phpmailer_filename = 'wp-includes/class-phpmailer.php';
+
+			// If phpMailer has been overridden (this happens in tests too).
+			if ( substr( $phpmailer_filename, - 1 * strlen( $built_in_phpmailer_filename ) ) !== $built_in_phpmailer_filename ) {
+
+				$plugin = $this->get_plugin_from_path( $phpmailer_filename );
+				if ( null === $plugin ) {
+					return '<div class="notice inline notice-warning"><p>WordPress is sending mail using <em>' . $phpmailer_filename . '</em>.</p></div>';
+				}
+
+				$notice_type = 'warning';
+				if ( stristr( $plugin['Name'], ' ses' )
+					|| stristr( $plugin['Description'], ' ses' ) ) {
+					$notice_type = 'success';
+				}
+
+				return '<div class="notice inline notice-' . $notice_type . '"><p>WordPress is sending mail using <em>' . $plugin['Name'] . '</em> plugin.</p></div>';
+			}
+		}
+
+		return '<div class="notice inline notice-error"><p>Email is being sent using WordPress\'s built in <code>wp_mail()</code> function. It is probably not being sent using AWS SES.</p></div>';
+
 	}
 
 	/**
-	 * Field Configuration, each item in this array is one field/setting we want to capture.
+	 * Given a filename, figure out what plugin it is from.
 	 *
-	 * @hooked admin_init
+	 * @param string $filename The file path we're trying to deterime the plugin for.
 	 *
-	 * @see https://github.com/reside-eng/wordpress-custom-plugin/blob/master/admin/class-wordpress-custom-plugin-admin.php
-	 *
-	 * @since    1.0.0
-	 *
-	 * phpcs:disable Generic.Commenting.DocComment.MissingShort
+	 * @return array|null
 	 */
-	public function setup_fields() {
+	private function get_plugin_from_path( $filename ) {
 
-		$settings_page_slug_name = $this->plugin_name;
-
-		/** @var Settings_Section_Element_Abstract[] $fields */
-		$fields = array();
-
-		$fields[] = new class( $this->settings, 'default', $settings_page_slug_name, $this->get_plugin_name(), $this->get_version() ) extends AWS_SNS_ARN_Abstract {
-
-			/**
-			 * @inheritDoc
-			 */
-			public function get_value() {
-				return $this->get_settings()->get_bounces_arn();
-			}
-
-			/**
-			 * @inheritDoc
-			 */
-			public function get_id() {
-				return Settings_Interface::BOUNCES_ARN;
-			}
-
-			/**
-			 * @inheritDoc
-			 */
-			public function get_title() {
-				return __( 'Bounces ARN:', 'ea-wp-aws-ses-bounce-handler' );
-			}
-		};
-
-		$fields[] = new class( $this->settings, 'default', $settings_page_slug_name, $this->get_plugin_name(), $this->get_version() ) extends AWS_SNS_ARN_Abstract {
-
-			/**
-			 * @inheritDoc
-			 */
-			public function get_value() {
-				return $this->get_settings()->get_complaints_arn();
-			}
-
-			/**
-			 * @inheritDoc
-			 */
-			public function get_id() {
-				return Settings_Interface::COMPLAINTS_ARN;
-			}
-
-			/**
-			 * @inheritDoc
-			 */
-			public function get_title() {
-				return __( 'Complaints ARN:', 'ea-wp-aws-ses-bounce-handler' );
-			}
-		};
-
-		foreach ( $fields as $field ) {
-
-			call_user_func_array(
-				'add_settings_field',
-				$field->get_add_settings_field_args()
-			);
-
-			call_user_func_array(
-				'register_setting',
-				$field->get_register_setting_args()
-			);
-
+		// If the file is outside the plugins dir, whats's up? MU plugins?
+		if ( ! stristr( $filename, WP_PLUGIN_DIR ) ) {
+			return null;
 		}
-	}
 
+		$plugin_file = trim( substr( $filename, strlen( realpath( WP_PLUGIN_DIR ) ) ), '/' );
+
+		$plugins = get_plugins();
+
+		if ( array_key_exists( $plugin_file, $plugins ) ) {
+
+			return $plugins[ $plugin_file ];
+		}
+
+		$plugin_slug = substr( $plugin_file, 0, strpos( $plugin_file, '/' ) );
+
+		foreach ( $plugins as $file => $plugin ) {
+
+			if ( stristr( $file, $plugin_slug ) ) {
+				return $plugin;
+			}
+		}
+
+		return null;
+	}
 }
