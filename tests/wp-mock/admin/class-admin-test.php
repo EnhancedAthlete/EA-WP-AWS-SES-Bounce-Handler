@@ -4,7 +4,7 @@
  *
  * @see Admin
  *
- * @package bh-wp-autologin-urls
+ * @package ea-wp-aws-ses-bounce-handler
  * @author Brian Henry <BrianHenryIE@gmail.com>
  */
 

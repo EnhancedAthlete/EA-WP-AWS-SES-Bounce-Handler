@@ -47,9 +47,9 @@ class Settings_Page extends WPPB_Object {
 	}
 
 	/**
-	 * Add the Autologin URLs settings menu-item/page as a submenu-item of the Settings menu.
+	 * Add the AWS SES Bounce Handler settings menu-item/page as a submenu-item of the Settings menu.
 	 *
-	 * /wp-admin/options-general.php?page=bh-wp-autologin-urls
+	 * /wp-admin/options-general.php?page=ea-wp-aws-ses-bounce-handler
 	 *
 	 * @hooked admin_menu
 	 */
