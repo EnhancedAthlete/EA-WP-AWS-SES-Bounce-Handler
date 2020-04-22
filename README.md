@@ -6,6 +6,26 @@ A WordPress plugin to unsubscribe users from email lists when AWS SES sends a bo
 
 ## Overview
 
+### Integrations
+
+#### WordPress
+
+![WordPress Users List](./assets/screenshot-3.png "WordPress Users List")
+
+#### WooCommerce
+
+![WooCommerce Notice](./assets/screenshot-2.png "WooCommerce Notice")
+
+#### The Newsletter Plugin
+
+> Newsletter is a real newsletter and email marketing system for your WordPress blog: perfect for list building, you can easily create, send and track e-mails, headache-free.
+
+Bounced emails get deleted from lists and complaints get unsubscribed.
+
+[Plugin on WordPress.org](https://wordpress.org/plugins/newsletter/) • [API documentation](https://www.thenewsletterplugin.com/documentation/newsletter-api)
+
+## Overview
+
 This plugin is for WordPress sites which are configured to send email using Amazon SES.
 
 [What Is Amazon SES?](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/Welcome.html)
@@ -34,24 +54,6 @@ This plugin parses the bounce and complaint notifications, adds the "Bounced Ema
 * Add the subscriptions in this plugin's settings
 
 ![Settings Page](./assets/screenshot-1.png "Settings Page")
-
-## Integration
-
-### WordPress
-
-![WordPress Users List](./assets/screenshot-3.png "WordPress Users List")
-
-### WooCommerce
-
-![WooCommerce Notice](./assets/screenshot-2.png "WooCommerce Notice")
-
-### The Newsletter Plugin
-
-> Newsletter is a real newsletter and email marketing system for your WordPress blog: perfect for list building, you can easily create, send and track e-mails, headache-free.
-
-Bounced emails get deleted from lists and complaints get unsubscribed.
-
-[Plugin on WordPress.org](https://wordpress.org/plugins/newsletter/) • [API documentation](https://www.thenewsletterplugin.com/documentation/newsletter-api)
 
 ## API
 
@@ -85,13 +87,9 @@ Also `handle_ses_complaint`.
 
 NB: When testing on your staging site, that must also be registered in SNS. 
 
-## Develop
+## Development
 
 See [BrianHenryIE/wordpress-plugin-boilerplate](https://github.com/brianhenryie/wordpress-plugin-boilerplate) repo for developer notes.
-
-## TODO
-
-* A button to create a user for bounce@simulator.amazonses.com and send a test email. 
 
 ## Acknowledgements
 
