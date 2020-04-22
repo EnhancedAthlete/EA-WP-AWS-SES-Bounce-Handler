@@ -50,10 +50,19 @@ This plugin parses the bounce and complaint notifications, adds the "Bounced Ema
 
 * Download the [latest release from GitHub](https://github.com/EnhancedAthlete/EA-WP-AWS-SNS-Client-REST-Endpoint/releases)
 * Follow Amazon's [Configuring Amazon SNS Notifications for Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html) document
-* Subscribe to the SNS topics with `<https://your-website.com>/wp-json/ea/v1/aws-ses/`
-* Add the subscriptions in this plugin's settings
-
+* Subscribe to the SNS topics using the endpoint in the settings page
+ 
 ![Settings Page](./assets/screenshot-1.png "Settings Page")
+
+## Verification
+
+The plugin's settings page can set up test data and send a test email to _bounce@simulator.amazonses.com_ (see: [Testing Email Sending in Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mailbox-simulator.html)), allowing you to view the sample user/order/subscriber after receiving a bounce notification.
+
+
+NB: When testing on your staging site, that must also be registered in SNS. 
+
+![Testing](./assets/screenshot-4.png "Testing")
+
 
 ## API
 
@@ -81,11 +90,23 @@ function my_bounce_handler( $email_address, $bounced_recipient, $message ) {
 
 Also `handle_ses_complaint`.
 
-## Testing
+A PHP interface exists for integrations to also perfom bounce tests on the settings page.
 
-[Testing Email Sending in Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mailbox-simulator.html)
+```
+add_filter( 'ea_wp_aws_ses_bounce_handler_integrations', 'add_my_integration, 10, 1);
 
-NB: When testing on your staging site, that must also be registered in SNS. 
+/**
+ * @var SES_Bounce_Handler_Integration_Interface[] $integrrations Other registered integrations.
+ */
+function add_my_integration( $integrations ) {
+
+	$integrations[ 'MyIntegrationName' ] = new class() implements SES_Bounce_Handler_Integration_Interface {
+		...
+	};
+	
+	return $integrations;
+}
+```
 
 ## Development
 

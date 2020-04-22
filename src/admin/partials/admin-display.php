@@ -28,7 +28,7 @@ $settings = $this->settings;
 
 	<h3>Marks user accounts and WooCommerce orders for bounced emails; unsubscribes users who mark email as spam.</h3>
 
-	<p>Follow Amazon's <a target="_blank" href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html">Configuring Amazon SNS Notifications for Amazon SES</a> document to set up notification SNS topics in <a target="_blank" href="https://console.aws.amazon.com/ses/home?#home:">AWS SES</a> for your verified domains and email adresses .</p>
+	<p>Follow Amazon's <a target="_blank" href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-sns-notifications.html">Configuring Amazon SNS Notifications for Amazon SES</a> document to set up notification SNS topics in <a target="_blank" href="https://console.aws.amazon.com/ses/home?#home:">AWS SES</a> for both your verified domains and email adresses.</p>
 
 	<div>
 	<span style="display: inline-block;">Use endpoint:</span>
@@ -54,7 +54,6 @@ $settings = $this->settings;
 	<h2>WordPress <code>wp_mail()</code> Status</h2>
 
 	<?php echo wp_kses( $this->get_wp_mail_info(), wp_kses_allowed_html( 'post' ) ); ?>
-
 
 	<h2>Testing</h2>
 
