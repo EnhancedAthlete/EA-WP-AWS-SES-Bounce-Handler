@@ -18,6 +18,7 @@
 namespace EA_WP_AWS_SES_Bounce_Handler\integrations;
 
 use EA_WP_AWS_SES_Bounce_Handler\admin\Bounce_Handler_Test;
+use stdClass;
 
 interface SES_Bounce_Handler_Integration_Interface {
 
@@ -47,24 +48,24 @@ interface SES_Bounce_Handler_Integration_Interface {
 	/**
 	 * The function that will be called with the bounce data.
 	 *
-	 * @param string $email_address     The email address that has bounced (sanitized).
-	 * @param object $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
-	 * @param object $message           Parent object of complete notification.
+	 * @param string   $email_address     The email address that has bounced (sanitized).
+	 * @param stdClass $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
+	 * @param stdClass $message           Parent object of complete notification.
 	 *
 	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
 	 */
-	public function handle_ses_bounce( $email_address, $bounced_recipient, $message ): void;
+	public function handle_ses_bounce( string $email_address, stdClass $bounced_recipient, stdClass $message ): void;
 
 	/**
 	 * The function that will be called with the complaint data.
 	 *
-	 * @param string $email_address        The email address that has complained.
-	 * @param object $complained_recipient Parent object with emailAddress, status, action, diagnosticCode.
-	 * @param object $message              Parent object of complete notification.
+	 * @param string   $email_address        The email address that has complained.
+	 * @param stdClass $complained_recipient Parent object with emailAddress, status, action, diagnosticCode.
+	 * @param stdClass $message              Parent object of complete notification.
 	 *
 	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
 	 */
-	public function handle_ses_complaint( $email_address, $complained_recipient, $message): void;
+	public function handle_ses_complaint( string $email_address, stdClass $complained_recipient, stdClass $message): void;
 
 	/**
 	 * First step in admin page tests. The integration should set up some dummy data (accounts, orders...) using
@@ -75,7 +76,7 @@ interface SES_Bounce_Handler_Integration_Interface {
 	 *
 	 * @return array
 	 */
-	public function setup_test( $test ): ?array;
+	public function setup_test( Bounce_Handler_Test $test ): ?array;
 
 	/**
 	 * Should use the earlier saved array of test data and check if the bounce notification has been received and
@@ -86,7 +87,7 @@ interface SES_Bounce_Handler_Integration_Interface {
 	 *
 	 * @return array {bool: success, string: html}
 	 */
-	public function verify_test( $test_data ): ?array;
+	public function verify_test( array $test_data ): ?array;
 
 	/**
 	 * The test data is not deleted automatically so the user can see the outcome of the bounce.
@@ -95,5 +96,5 @@ interface SES_Bounce_Handler_Integration_Interface {
 	 *
 	 * @return bool
 	 */
-	public function delete_test_data( $test_data ): bool;
+	public function delete_test_data( array $test_data ): bool;
 }

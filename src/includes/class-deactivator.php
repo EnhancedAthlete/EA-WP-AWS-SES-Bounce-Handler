@@ -27,7 +27,7 @@ class Deactivator {
 	 *
 	 * @since 1.2.0
 	 */
-	public static function deactivate() {
+	public static function deactivate(): void {
 		remove_role( 'bounced_email' );
 	}
 

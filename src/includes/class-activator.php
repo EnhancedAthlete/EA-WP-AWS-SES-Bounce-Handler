@@ -29,7 +29,7 @@ class Activator {
 	 *
 	 * @since 1.2.0
 	 */
-	public static function activate() {
+	public static function activate(): void {
 		add_role( 'bounced_email', 'Bounced Email' );
 
 		$secret_key = get_option( Settings_Interface::SECRET_KEY );
