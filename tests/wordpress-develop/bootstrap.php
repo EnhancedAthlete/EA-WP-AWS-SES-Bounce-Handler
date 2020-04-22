@@ -42,6 +42,23 @@ function _manually_load_plugin() {
 	// Assumes the plugin's directory name is the same as its filename.
 	$plugin_name = basename( $project_root_dir );
 
+	$option_name = 'newsletter_main';
+	add_filter(
+		'pre_option_' . $option_name,
+		function( $result, $option, $default ) {
+			$options                  = array();
+			$options['scheduler_max'] = 123;
+			return $options;
+		},
+		10,
+		3
+	);
+	require_once $project_root_dir . '/wp-content/plugins/newsletter/plugin.php';
+
+	Newsletter::instance()->hook_activate();
+
+	require_once $project_root_dir . '/wp-content/plugins/woocommerce/woocommerce.php';
+
 	require_once $project_root_dir . '/src/' . $plugin_name . '.php';
 
 }

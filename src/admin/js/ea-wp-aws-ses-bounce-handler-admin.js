@@ -3,6 +3,8 @@
 
 	$(window).load(function() {
 
+		// check GET page=ea-wp-aws-ses-bounce-handler
+
 		var runSesBounceTestButton = document.getElementById( 'run-ses-bounce-test-button' );
 
 		if(runSesBounceTestButton != null) {
@@ -33,8 +35,8 @@
 
 					$('#run-ses-bounce-test-response').append(content);
 
-
-					$('#run-ses-bounce-test-response').append( deleteTestDataButton );
+					//
+					// $('#run-ses-bounce-test-response').append( deleteTestDataButton );
 
 					setTimeout(function () {
 

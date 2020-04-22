@@ -74,6 +74,11 @@ class SNS extends WPPB_Object {
 	 */
 	public function process_new_aws_sns_notification( \WP_REST_Request $request ) {
 
+		// Check the URL `secret` querystring.
+		if ( ! $request->get_param( 'secret' ) || $this->settings->get_secret_key() !== $request->get_param( 'secret' ) ) {
+			return false;
+		}
+
 		$headers = $request->get_headers();
 
 		// If this is not an AWS SNS message.
@@ -93,16 +98,21 @@ class SNS extends WPPB_Object {
 		switch ( $message_type ) {
 			case 'SubscriptionConfirmation':
 				$this->blindly_confirm_subscription_requests( $headers, $body );
-
 				return true;
 
 			case 'UnsubscribeConfirmation':
-				// Unimplemented.
+				// It doesn't seem that SNS sends a confirmation when the subscription is deleted in the AWS console.
 				return false;
 
 			case 'Notification':
 				$topic_arn = $body->TopicArn;
-				$message   = json_decode( $body->Message );
+
+				// Do not process data from unknown sources.
+				if ( ! in_array( $topic_arn, $this->settings->get_confirmed_arns(), true ) ) {
+					return false;
+				}
+
+				$message = json_decode( $body->Message );
 
 				$this->handle_bounces( $topic_arn, $headers, $body, $message );
 				$this->handle_complaints( $topic_arn, $headers, $body, $message );
@@ -141,6 +151,9 @@ class SNS extends WPPB_Object {
 			 *
 			 * @var \WP_Error $request_response
 			 */
+
+			// TODO: Reschedule confirmation.
+			// Pretty unusual that this would fail, given it runs when being pinged by AWS.
 
 			$error_message = 'Error confirming subscription <b><i>' . $subscription_topic . '</i></b>: ' . $request_response->get_error_message();
 
@@ -195,7 +208,7 @@ class SNS extends WPPB_Object {
 
 			foreach ( $message->bounce->bouncedRecipients as $bounced_recipient ) {
 
-				$email_address = $bounced_recipient->emailAddress;
+				$email_address = sanitize_email( $bounced_recipient->emailAddress );
 
 				/**
 				 * Action to allow other plugins to act on SES bounce notification.
@@ -231,7 +244,7 @@ class SNS extends WPPB_Object {
 
 		foreach ( $message->complaint->complainedRecipients as $complained_recipient ) {
 
-			$email_address = $complained_recipient->emailAddress;
+			$email_address = sanitize_email( $complained_recipient->emailAddress );
 
 			/**
 			 * Action to allow other plugins to act on SES complaint notifications.

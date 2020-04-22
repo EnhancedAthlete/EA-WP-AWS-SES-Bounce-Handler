@@ -31,6 +31,12 @@ class Activator {
 	 */
 	public static function activate() {
 		add_role( 'bounced_email', 'Bounced Email' );
+
+		$secret_key = get_option( Settings_Interface::SECRET_KEY );
+		if ( false === $secret_key ) {
+			$secret_key = wp_generate_password();
+			update_option( Settings_Interface::SECRET_KEY, $secret_key );
+		}
 	}
 
 }

@@ -78,4 +78,26 @@ class EA_WP_AWS_SES_Bounce_Handler_Develop_Test extends \WP_UnitTestCase {
 		$this->assertEquals( $expected_priority, $actual_action_priority );
 
 	}
+
+	/**
+	 * Check all three integrations are hooked onto handle_ses_bounce
+	 */
+	public function test_integrations_hooks_added() {
+
+		do_action( 'plugins_loaded' );
+
+		$action_name = 'handle_ses_bounce';
+
+		global $wp_filter;
+
+		$this->assertArrayHasKey( $action_name, $wp_filter );
+
+		/**
+		 * The handle_bounce_hook which should have 3 actions hooked at priority 10.
+		 */
+		$handle_bounce_hook = $wp_filter['handle_ses_bounce'];
+
+		$this->assertEquals( 3, count( $handle_bounce_hook->callbacks[10] ) );
+
+	}
 }

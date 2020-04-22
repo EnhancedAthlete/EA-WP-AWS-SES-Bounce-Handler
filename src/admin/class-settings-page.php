@@ -140,7 +140,7 @@ class Settings_Page extends WPPB_Object {
 	/**
 	 * Given a filename, figure out what plugin it is from.
 	 *
-	 * @param $filename
+	 * @param string $filename The file path we're trying to deterime the plugin for.
 	 *
 	 * @return array|null
 	 */
