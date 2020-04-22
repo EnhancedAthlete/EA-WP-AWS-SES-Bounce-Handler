@@ -15,6 +15,7 @@ namespace EA_WP_AWS_SES_Bounce_Handler\integrations;
 
 use EA_WP_AWS_SES_Bounce_Handler\admin\Bounce_Handler_Test;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
+use stdClass;
 use WC_Order;
 
 /**
@@ -28,7 +29,11 @@ class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_
 
 	const BOUNCED_META_KEY = 'ea_wp_aws_ses_bounce_hander_bounced';
 
-
+	/**
+	 * Return a description for the admin UI, explaining a note and notice will be added to orders.
+	 *
+	 * @return string
+	 */
 	public function get_description(): string {
 		return 'Adds a note and notice on orders whose email address bounced';
 	}
@@ -54,11 +59,11 @@ class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_
 	 *
 	 * @hooked handle_ses_bounce
 	 *
-	 * @param string $email_address     The email address that has bounced.
-	 * @param object $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
-	 * @param object $message           Parent object of complete notification.
+	 * @param string   $email_address     The email address that has bounced.
+	 * @param stdClass $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
+	 * @param stdClass $message           Parent object of complete notification.
 	 */
-	public function handle_ses_bounce( $email_address, $bounced_recipient, $message ): void {
+	public function handle_ses_bounce( string $email_address, stdClass $bounced_recipient, stdClass $message ): void {
 
 		if ( ! $this->is_enabled() ) {
 			return;
@@ -79,27 +84,32 @@ class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_
 
 			$order->save();
 		}
-
 	}
 
-	public function handle_ses_complaint( $email_address, $complained_recipient, $message ): void {
-		// Do nothing.
-	}
+	/**
+	 * Do nothing.
+	 *
+	 * @hooked handle_ses_complaint
+	 *
+	 * @param string   $email_address The email address which complained about our email.
+	 * @param stdClass $complained_recipient The SES notification the email address was received in.
+	 * @param stdClass $message The SNS notification the SES notification was received in.
+	 */
+	public function handle_ses_complaint( string $email_address, stdClass $complained_recipient, stdClass $message ): void {}
 
 	/**
 	 * Create an order with the bounce simulator email address.
 	 *
-	 * @param Bounce_Handler_Test $test
+	 * @param Bounce_Handler_Test $test The test orchestrator and configuration.
 	 *
 	 * @return array|void
 	 */
-	public function setup_test( $test ): ?array {
+	public function setup_test( Bounce_Handler_Test $test ): ?array {
 
 		if ( ! $this->is_enabled() ) {
 			return null;
 		}
 
-		// Created dummy order
 		$order   = wc_create_order();
 		$address = array(
 			'email' => $test->get_email(),
@@ -110,7 +120,7 @@ class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_
 
 		$order_url = admin_url( 'post.php?post=' . $order->get_id() . '&action=edit' );
 
-		$data['wc_order']                    = $order->get_id();
+		$data['wc_order_id']                 = $order->get_id();
 		$data['wc_order_bounced_meta_value'] = $order_bounced_meta_value;
 
 		$html = '<p>WooCommerce <a href="' . $order_url . '">order ' . $order->get_id() . '</a> created with meta key <em>' . self::BOUNCED_META_KEY . '</em> value: <em>' . $order_bounced_meta_value . '</em></p>';
@@ -124,13 +134,13 @@ class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_
 	/**
 	 * Verify the order has metadata added.
 	 *
-	 * @param array $test_data
+	 * @param array $test_data {int: wc_order_id}.
 	 *
 	 * @return array
 	 */
-	public function verify_test( $test_data ): ?array {
+	public function verify_test( array $test_data ): ?array {
 
-		$order = wc_get_order( intval( $test_data['wc_order'] ) );
+		$order = wc_get_order( intval( $test_data['wc_order_id'] ) );
 
 		$success = false;
 
@@ -161,17 +171,16 @@ class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_
 	/**
 	 * Delete the order created for the test.
 	 *
-	 * @param array $test_data
+	 * @param array $test_data {int: wc_order_id}.
 	 */
-	public function delete_test_data( $test_data ): bool {
+	public function delete_test_data( array $test_data ): bool {
 
-		if ( isset( $bounce_test_datum['wc_order_id'] ) && class_exists( \WooCommerce::class ) ) {
-			wp_delete_post( intval( $bounce_test_datum['wc_order_id'] ) );
+		if ( isset( $test_data['wc_order_id'] ) && class_exists( \WooCommerce::class ) ) {
+			wp_delete_post( intval( $test_data['wc_order_id'] ) );
 		}
 
 		return true;
 	}
-
 
 	/**
 	 * Display an admin notice if this order's customer email has bounced.

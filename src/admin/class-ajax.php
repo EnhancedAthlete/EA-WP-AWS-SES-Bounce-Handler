@@ -1,10 +1,14 @@
 <?php
+/**
+ * Handle AJAX requests on the settings page. Primarily for testing the configuration.
 
+ * @package ea-wp-aws-ses-bounce-handler
+ * @author Brian Henry <BrianHenryIE@gmail.com>
+ */
 
 namespace EA_WP_AWS_SES_Bounce_Handler\admin;
 
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
-
 
 /**
  * Code to run the ses test and to poll for its completion.
@@ -13,6 +17,9 @@ class Ajax extends WPPB_Object {
 
 	const AWS_SES_BOUNCE_TESTS = 'aws_ses_bounce_tests';
 
+	/**
+	 * Creates a new test – the time is used as a uid and in the AWS bounce simulator email address.
+	 */
 	public function run_ses_bounce_test() {
 
 		$data = array();
@@ -25,7 +32,7 @@ class Ajax extends WPPB_Object {
 			wp_send_json_error( $data, 400 );
 		}
 
-		// TODO Verify settings: ARN, wp_mail
+		// TODO Verify settings: ARN exists, wp_mail correct, before enabling button.
 
 		$test = new Bounce_Handler_Test();
 
@@ -44,25 +51,20 @@ class Ajax extends WPPB_Object {
 	}
 
 	/**
+	 * Check the nonce, get the saved test data, check has the bounce been received and processed correctly.
 	 *
+	 * Return an array { 'testSuccess', 'testComplete', 'html', 'newNonce' }
 	 */
 	public function fetch_test_results() {
 
 		$data = array();
 
 		// Verify nonce.
+		if ( ! check_ajax_referer( 'run-ses-bounce-test-form', false, false ) ) {
 
-		if ( isset( $_POST['_wpnonce'] ) ) {
+			$data['message'] = 'Referrer/nonce failure';
 
-			$nonce  = isset( $_POST['_wpnonce'] );
-			$result = wp_verify_nonce( $nonce, 'run-ses-bounce-test-form' );
-
-			if ( false == $result ) {
-
-				$data['message'] = 'Referrer/nonce failure';
-
-				wp_send_json_error( $data, 400 );
-			}
+			wp_send_json_error( $data, 400 );
 		}
 
 		if ( ! isset( $_POST['bounce_test_id'] ) ) {
@@ -74,9 +76,13 @@ class Ajax extends WPPB_Object {
 
 		$bounce_test_id = intval( $_POST['bounce_test_id'] );
 
+		/**
+		 * The previously saved tests.
+		 *
+		 * @var Bounce_Handler_Test[] $all_bounce_test_data
+		 */
 		$all_bounce_test_data = (array) get_option( self::AWS_SES_BOUNCE_TESTS, array() );
 
-		/** @var Bounce_Handler_Test $test */
 		$test = $all_bounce_test_data[ $bounce_test_id ];
 
 		$data = $test->verify_test();
@@ -94,12 +100,38 @@ class Ajax extends WPPB_Object {
 		wp_send_json( $data );
 	}
 
-	public function delete_test_data( $test_id ) {
+	/**
+	 * Delete saved test data for a specified bounce handler test.
+	 */
+	public function delete_test_data() {
 
-		/** @var Bounce_Handler_Test[] $all_bounce_test_data */
+		$data = array();
+		// Verify nonce.
+		if ( ! check_ajax_referer( 'run-ses-bounce-test-form', false, false ) ) {
+
+			$data['message'] = 'Referrer/nonce failure';
+
+			wp_send_json_error( $data, 400 );
+		}
+
+		if ( ! isset( $_POST['bounce_test_id'] ) ) {
+
+			$data['message'] = 'bounce_test_id not set.';
+
+			wp_send_json_error( $data, 400 );
+		}
+
+		$bounce_test_id = intval( $_POST['bounce_test_id'] );
+
+		/**
+		 * The previously saved tests.
+		 *
+		 * @var Bounce_Handler_Test[] $all_bounce_test_data
+		 */
 		$all_bounce_test_data = (array) get_option( self::AWS_SES_BOUNCE_TESTS, array() );
 
-		$all_bounce_test_data[ $test_id ]->delete_test_data();
+		$all_bounce_test_data[ $bounce_test_id ]->delete_test_data();
 
+		wp_send_json( $data );
 	}
 }

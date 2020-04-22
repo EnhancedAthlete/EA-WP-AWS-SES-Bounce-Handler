@@ -35,9 +35,6 @@
 
 					$('#run-ses-bounce-test-response').append(content);
 
-					//
-					// $('#run-ses-bounce-test-response').append( deleteTestDataButton );
-
 					setTimeout(function () {
 
 						fetchTestResults( bounceTestId );
@@ -57,7 +54,7 @@
 		var action = 'fetch_test_results';
 
 		var data = {
-			'_nonce': nonce,
+			'_wpnonce': nonce,
 			'action': action,
 			'bounce_test_id': bounceTestId
 		};
@@ -73,7 +70,7 @@
 
 				var testSuccess = data.testSuccess;
 
-				$('#' + bounceTestId ).removeClass('notice-info');
+				$('#' + bounceTestId).removeClass('notice-info');
 
 				if (testSuccess) {
 					// Set color to green
@@ -83,8 +80,9 @@
 					$('#' + bounceTestId).addClass('notice-error');
 				}
 
-				$('#'+bounceTestId).append( data.html );
+				$('#' + bounceTestId).append(data.html);
 
+				add_delete_data_button(bounceTestId);
 
 			} else {
 				setTimeout(function () {
@@ -94,15 +92,48 @@
 				}, 5000);
 			}
 
-		}).fail(function(jqXHR, textStatus, errorThrown) {
+		}).fail(handleFailure);
 
-			var html = '<div class="notice inline notice-error"><p>' + jqXHR.responseJSON.data.message + '</p></div>';
-
-			$('#run-ses-bounce-test-response').append(html);
-
-			$('.bounce-test-running-spinner').css('display', 'none');
-
-		});
 	}
+
+
+	function add_delete_data_button( bounceTestId ) {
+
+		// create button
+		var newButton = document.createElement('button');
+
+		newButton.className = 'button';
+		newButton.textContent = 'Delete test data';
+
+		// add handler
+		newButton.onclick = function() {
+
+			var data = {
+				'action': 'delete_test_data',
+				'bounce_test_id': bounceTestId,
+				'_wpnonce': $('#run-ses-bounce-test-form #_wpnonce').val()
+			};
+
+			$.post(ajaxurl, data, function (data) {
+
+				newButton.disabled = true;
+
+			}).fail(handleFailure);
+		};
+
+		$('#run-ses-bounce-test-response').append( newButton );
+
+	}
+
+	function handleFailure(jqXHR, textStatus, errorThrown) {
+
+		var html = '<div class="notice inline notice-error"><p>' + jqXHR.responseJSON.data.message + '</p></div>';
+
+		$('#run-ses-bounce-test-response').append(html);
+
+		$('.bounce-test-running-spinner').css('display', 'none');
+
+	}
+
 
 })( jQuery );

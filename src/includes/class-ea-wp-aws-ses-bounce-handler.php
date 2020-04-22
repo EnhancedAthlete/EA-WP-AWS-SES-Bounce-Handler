@@ -171,6 +171,7 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 		$this->ajax = new Ajax( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'wp_ajax_run_ses_bounce_test', $this->ajax, 'run_ses_bounce_test' );
 		$this->loader->add_action( 'wp_ajax_fetch_test_results', $this->ajax, 'fetch_test_results' );
+		$this->loader->add_action( 'wp_ajax_delete_test_data', $this->ajax, 'delete_test_data' );
 
 		$this->plugins_page = new Plugins_Page( $this->get_plugin_name(), $this->get_version() );
 		$plugin_basename    = $this->get_plugin_name() . '/' . $this->get_plugin_name() . '.php';
@@ -189,7 +190,6 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 
 		$this->sns = new SNS( $this->get_plugin_name(), $this->get_version(), $this->settings );
 		$this->loader->add_action( 'rest_api_init', $this->sns, 'add_ea_aws_ses_rest_endpoint' );
-
 	}
 
 	/**
