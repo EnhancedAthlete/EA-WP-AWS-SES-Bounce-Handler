@@ -35,7 +35,7 @@
     "coenjacobs/mozart": "0.5.1",
     "wordpress/wordpress": ">=5.4",
     "kporras07/composer-symlinks": "dev-master",
-    "phpunit/phpunit"     : "^7.5",
+    "phpunit/phpunit": "^7.5",
     "10up/wp_mock": "0.4.2",
     "phpunit/phpcov": "^5.0",
     "phpcompatibility/phpcompatibility-wp": "*",
