@@ -10,6 +10,7 @@ namespace EA_WP_AWS_SES_Bounce_Handler\integrations;
 
 use EA_WP_AWS_SES_Bounce_Handler\admin\Bounce_Handler_Test;
 use stdClass;
+use TNP;
 
 /**
  * Broadly tests each function in the Newsletter integration.
@@ -52,7 +53,7 @@ class Newsletter_Test extends \Codeception\TestCase\WPTestCase {
 	 */
 	public function test_bounced_email() {
 
-		\TNP::add_subscriber( array( 'email' => 'brianhenryie@gmail.com' ) );
+		TNP::add_subscriber( array( 'email' => 'brianhenryie@gmail.com' ) );
 
 		$tnp = \Newsletter::instance();
 
@@ -87,7 +88,7 @@ class Newsletter_Test extends \Codeception\TestCase\WPTestCase {
 			3
 		);
 
-		\TNP::add_subscriber( array( 'email' => 'brianhenryie@gmail.com' ) );
+		TNP::add_subscriber( array( 'email' => 'brianhenryie@gmail.com' ) );
 
 		$tnp = \Newsletter::instance();
 
@@ -167,7 +168,7 @@ class Newsletter_Test extends \Codeception\TestCase\WPTestCase {
 	 */
 	public function test_delete_test_data() {
 
-		\TNP::add_subscriber( array( 'email' => 'brianhenryie@gmail.com' ) );
+		TNP::add_subscriber( array( 'email' => 'brianhenryie@gmail.com' ) );
 
 		$tnp = \Newsletter::instance();
 
