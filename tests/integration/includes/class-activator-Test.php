@@ -20,7 +20,7 @@ class Activator_Test extends \Codeception\TestCase\WPTestCase {
 	/**
 	 * Check the role does not exists, run activation, then verify it does.
 	 */
-	public function test_role_removed_on_activation() {
+	public function test_role_added_on_activation() {
 
 		$roles = wp_roles();
 
