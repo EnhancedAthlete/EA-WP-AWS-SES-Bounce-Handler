@@ -3,6 +3,17 @@
   "description": "Unsubscribe users from email lists when AWS SES sends a bounce or complaint report.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0+-or-later",
+  "authors": [
+    {
+      "name": "Brian Henry",
+      "email": "BrianHenryIE@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "process-timeout": 0
+  },
   "repositories": [
     {
       "url": "https://github.com/WordPress/wordpress-develop",
@@ -26,14 +37,15 @@
     }
   ],
   "require": {
+    "php": ">=7.2",
     "brianhenryie/wppb-lib": "dev-master",
     "pablo-sg-pacheco/wp-namespace-autoloader": "dev-master"
   },
   "require-dev": {
     "brianhenryie/composer-phpstorm": "dev-master",
     "cweagans/composer-patches": "^1.0",
-    "coenjacobs/mozart": "0.5.1",
-    "wordpress/wordpress": ">=5.4",
+    "coenjacobs/mozart": "0.6.0-beta-3",
+    "wordpress/wordpress": "^5.4",
     "kporras07/composer-symlinks": "dev-master",
     "phpunit/phpunit": "^7.5",
     "10up/wp_mock": "0.4.2",
@@ -42,15 +54,19 @@
     "dealerdirect/phpcodesniffer-composer-installer": "*",
     "wp-coding-standards/wpcs": "*",
     "wpackagist-plugin/newsletter":"*",
-    "woocommerce/woocommerce": ">4"
+    "wpackagist-plugin/woocommerce": ">4",
+    "wpackagist-theme/storefront": "*",
+    "lucatume/wp-browser": "2.4.2",
+    "codeception/module-asserts": "^1.0",
+    "voku/portable-ascii": "dev-master",
+    "codeception/module-db": "^1.0.0",
+    "codeception/module-phpbrowser": "^1.0.0",
+    "codeception/module-webdriver": "^1.0",
+    "codeception/module-filesystem": "^1.0",
+    "codeception/module-cli": "^1.0",
+    "codeception/util-universalframework": "^1.0"
   },
   "extra": {
-    "patches": {
-      "coenjacobs/mozart": {
-        "Allow default packages" : "https://github.com/coenjacobs/mozart/pull/34.patch",
-        "Add config option to disable deleting vendor directories": "https://github.com/coenjacobs/mozart/pull/38.patch"
-      }
-    },
     "mozart": {
       "dep_namespace": "EA_WP_AWS_SES_Bounce_Handler\\",
       "dep_directory": "/src/vendor/",
@@ -59,6 +75,8 @@
       "delete_vendor_directories": false
     },
     "symlinks": {
+      "wp-content": "vendor/wordpress/wordpress/build/wp-content",
+      "wp-content/plugins": "vendor/wordpress/wordpress/src/wp-content/plugins",
       "src": "wp-content/plugins/ea-wp-aws-ses-bounce-handler",
       "vendor/wordpress/wordpress/src": "wordpress"
     },
@@ -80,15 +98,19 @@
   "scripts": {
     "post-install-cmd": [
       "\"vendor/bin/mozart\" compose",
+      "cd vendor/wordpress/wordpress; rm build/wp-content || true; npm install; npm run build; cd ../../..",
+      "export $(grep -v '^#' .env.testing | xargs); vendor/bin/wp config create --dbname=$TEST_SITE_DB_NAME --dbuser=$TEST_SITE_DB_USER --dbpass=$TEST_SITE_DB_PASSWORD --path=vendor/wordpress/wordpress/build || true",
       "Kporras07\\ComposerSymlinks\\ScriptHandler::createSymlinks",
-      "mkdir -p vendor/wordpress/wordpress/src/wp-content/uploads",
+      "mkdir -p wordpress/wp-content/uploads",
       "BrianHenryIE\\ComposerPhpStorm\\ExcludeFolders::update",
       "BrianHenryIE\\ComposerPhpStorm\\PHPUnitRunConfigurations::update"
     ],
     "post-update-cmd": [
       "\"vendor/bin/mozart\" compose",
+      "cd vendor/wordpress/wordpress; rm build/wp-content || true; npm install; npm run build; cd ../../..",
+      "export $(grep -v '^#' .env.testing | xargs); vendor/bin/wp config create --dbname=$TEST_SITE_DB_NAME --dbuser=$TEST_SITE_DB_USER --dbpass=$TEST_SITE_DB_PASSWORD --path=vendor/wordpress/wordpress/build || true",
       "Kporras07\\ComposerSymlinks\\ScriptHandler::createSymlinks",
-      "mkdir -p vendor/wordpress/wordpress/src/wp-content/uploads",
+      "mkdir -p wordpress/wp-content/uploads",
       "BrianHenryIE\\ComposerPhpStorm\\ExcludeFolders::update",
       "BrianHenryIE\\ComposerPhpStorm\\PHPUnitRunConfigurations::update"
     ]
