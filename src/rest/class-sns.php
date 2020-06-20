@@ -13,6 +13,7 @@ namespace EA_WP_AWS_SES_Bounce_Handler\rest;
 
 use EA_WP_AWS_SES_Bounce_Handler\includes\Settings_Interface;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
+use stdClass;
 
 /**
  * The sns-invoked functionality of the plugin.
@@ -116,6 +117,7 @@ class SNS extends WPPB_Object {
 
 				$this->handle_bounces( $topic_arn, $headers, $body, $message );
 				$this->handle_complaints( $topic_arn, $headers, $body, $message );
+				$this->handle_unsubscribe_emails( $topic_arn, $headers, $body, $message );
 
 				break;
 			default:
@@ -129,8 +131,8 @@ class SNS extends WPPB_Object {
 	/**
 	 * Respond to AWS subscription requests with "yes"!
 	 *
-	 * @param array  $headers  The HTTP headers received from AWS SNS.
-	 * @param object $body     The parsed JSON received from AWS SNS.
+	 * @param array    $headers  The HTTP headers received from AWS SNS.
+	 * @param stdClass $body     The parsed JSON received from AWS SNS.
 	 *
 	 * @return array
 	 *
@@ -193,10 +195,10 @@ class SNS extends WPPB_Object {
 	 *
 	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
 	 *
-	 * @param string $notification_topic_arn  The ARN of the received notification.
-	 * @param array  $headers                 HTTP headers received from AWS SNS.
-	 * @param object $body                    HTTP body received from AWS SNS.
-	 * @param object $message                 The (potential) bounce report object from AWS SES.
+	 * @param string   $notification_topic_arn  The ARN of the received notification.
+	 * @param array    $headers                 HTTP headers received from AWS SNS.
+	 * @param stdClass $body                    HTTP body received from AWS SNS.
+	 * @param stdClass $message                 The (potential) bounce report object from AWS SES.
 	 */
 	public function handle_bounces( $notification_topic_arn, $headers, $body, $message ) {
 
@@ -214,8 +216,8 @@ class SNS extends WPPB_Object {
 				 * Action to allow other plugins to act on SES bounce notification.
 				 *
 				 * @param string $email_address     The email address that has bounced.
-				 * @param object $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
-				 * @param object $message           Parent object of complete notification.
+				 * @param stdClass $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
+				 * @param stdClass $message           Parent object of complete notification.
 				 *
 				 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
 				 */
@@ -231,10 +233,10 @@ class SNS extends WPPB_Object {
 	 *
 	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
 	 *
-	 * @param string $notification_topic_arn  The ARN of the received notification.
-	 * @param array  $headers                 HTTP headers received from AWS SNS.
-	 * @param object $body                    HTTP body received from AWS SNS.
-	 * @param object $message                 The (potential) complaint report object from AWS SES.
+	 * @param string   $notification_topic_arn  The ARN of the received notification.
+	 * @param array    $headers                 HTTP headers received from AWS SNS.
+	 * @param stdClass $body                    HTTP body received from AWS SNS.
+	 * @param stdClass $message                 The (potential) complaint report object from AWS SES.
 	 */
 	public function handle_complaints( $notification_topic_arn, $headers, $body, $message ) {
 
@@ -250,13 +252,49 @@ class SNS extends WPPB_Object {
 			 * Action to allow other plugins to act on SES complaint notifications.
 			 *
 			 * @param string $email_address     The email address that has complained.
-			 * @param object $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
-			 * @param object $message           Parent object of complete notification.
+			 * @param stdClass $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
+			 * @param stdClass $message           Parent object of complete notification.
 			 *
 			 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
 			 */
 			do_action( 'handle_ses_complaint', $email_address, $complained_recipient, $message );
 		}
+	}
+
+
+	/**
+	 * When a complaint notification is received from SES fire the action for integrations and other plugins to hook into.
+	 *
+	 * @hooked filter ea_aws_sns_notification
+	 *
+	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
+	 *
+	 * @param string   $notification_topic_arn  The ARN of the received notification.
+	 * @param array    $headers                 HTTP headers received from AWS SNS.
+	 * @param stdClass $body                    HTTP body received from AWS SNS.
+	 * @param stdClass $message                 The (potential) complaint report object from AWS SES.
+	 */
+	public function handle_unsubscribe_emails( $notification_topic_arn, $headers, $body, $message ) {
+
+		if ( 'Received' !== $message->notificationType ) {
+			return;
+		}
+
+		$email = $message->mail;
+
+		$email_address = sanitize_email( $email->source );
+
+		/**
+		 * Action to allow other plugins to act on SES complaint notifications.
+		 *
+		 * @param string $email_address     The email address that has complained.
+		 * @param stdClass $email Parent object with emailAddress, status, action, diagnosticCode.
+		 * @param stdClass $message           Parent object of complete notification.
+		 *
+		 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
+		 */
+		do_action( 'handle_unsubscribe_email', $email_address, $email, $message );
+
 	}
 
 }
