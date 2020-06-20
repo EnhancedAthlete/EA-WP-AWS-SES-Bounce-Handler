@@ -33,9 +33,11 @@ class Admin extends WPPB_Object {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
+		global $pagenow;
+		if ( 'options-general.php' === $pagenow && 'ea-wp-aws-ses-bounce-handler' === $_GET['page'] ) {
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ea-wp-aws-ses-bounce-handler-admin.css', array(), $this->version, 'all' );
-
+			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ea-wp-aws-ses-bounce-handler-admin.css', array(), $this->get_version, 'all' );
+		}
 	}
 	/**
 	 * Register the JavaScript for the admin area.
@@ -43,10 +45,11 @@ class Admin extends WPPB_Object {
 	 * @since    1.2.0
 	 */
 	public function enqueue_scripts() {
+		global $pagenow;
+		if ( 'options-general.php' === $pagenow && 'ea-wp-aws-ses-bounce-handler' === $_GET['page'] ) {
 
-		$version = defined( WP_DEBUG ) && WP_DEBUG ? time() : $this->get_version();
-
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ea-wp-aws-ses-bounce-handler-admin.js', array( 'jquery' ), $version, false );
+			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ea-wp-aws-ses-bounce-handler-admin.js', array( 'jquery' ), $this->get_version(), false );
+		}
 	}
 
 }
