@@ -12,6 +12,7 @@
 namespace EA_WP_AWS_SES_Bounce_Handler\rest;
 
 use EA_WP_AWS_SES_Bounce_Handler\includes\Settings_Interface;
+use EA_WP_AWS_SES_Bounce_Handler\Logger;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
 use stdClass;
 
@@ -62,8 +63,36 @@ class SNS extends WPPB_Object {
 			array(
 				'methods'  => 'POST',
 				'callback' => array( $this, 'process_new_aws_sns_notification' ),
+				'permission_callback' => array( $this, 'check_secret' )
 			)
 		);
+	}
+
+	/**
+	 * Check does the request have the 'secret' parameter and does it match what's in the database.
+	 *
+	 * @param \WP_REST_Request $request Request used to generate the response.
+	 *
+	 * @return bool
+	 */
+	public function check_secret( $request ) {
+
+		$request_secret = $request->get_param( 'secret' );
+
+		// Check the URL `secret` querystring.
+		if ( ! $request_secret ) {
+			Logger::log( 'secret not present' );
+			return false;
+		}
+
+		$saved_secret = $this->settings->get_secret_key();
+
+		if( $saved_secret !== $request_secret ) {
+			Logger::log( "secret incorrect. Was $request_secret expected $saved_secret." );
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -74,11 +103,6 @@ class SNS extends WPPB_Object {
 	 * @return bool
 	 */
 	public function process_new_aws_sns_notification( \WP_REST_Request $request ) {
-
-		// Check the URL `secret` querystring.
-		if ( ! $request->get_param( 'secret' ) || $this->settings->get_secret_key() !== $request->get_param( 'secret' ) ) {
-			return false;
-		}
 
 		$headers = $request->get_headers();
 
