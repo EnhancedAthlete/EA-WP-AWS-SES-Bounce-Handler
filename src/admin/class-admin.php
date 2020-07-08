@@ -32,7 +32,8 @@ class Admin extends WPPB_Object {
 	 */
 	public function enqueue_styles() {
 		global $pagenow;
-		if ( 'options-general.php' === $pagenow && 'ea-wp-aws-ses-bounce-handler' === $_GET['page'] ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'ea-wp-aws-ses-bounce-handler' === filter_var( wp_unslash( $_GET['page'] ), FILTER_SANITIZE_STRING ) ) {
 
 			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ea-wp-aws-ses-bounce-handler-admin.css', array(), $this->get_version(), 'all' );
 		}
@@ -45,7 +46,8 @@ class Admin extends WPPB_Object {
 	 */
 	public function enqueue_scripts() {
 		global $pagenow;
-		if ( 'options-general.php' === $pagenow && 'ea-wp-aws-ses-bounce-handler' === $_GET['page'] ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'ea-wp-aws-ses-bounce-handler' === filter_var( wp_unslash( $_GET['page'] ), FILTER_SANITIZE_STRING ) ) {
 
 			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ea-wp-aws-ses-bounce-handler-admin.js', array( 'jquery' ), $this->get_version(), false );
 		}

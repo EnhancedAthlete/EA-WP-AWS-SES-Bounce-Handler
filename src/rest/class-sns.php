@@ -61,9 +61,9 @@ class SNS extends WPPB_Object {
 			'ea/v1',
 			'/aws-ses/',
 			array(
-				'methods'  => 'POST',
-				'callback' => array( $this, 'process_new_aws_sns_notification' ),
-				'permission_callback' => array( $this, 'check_secret' )
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'process_new_aws_sns_notification' ),
+				'permission_callback' => array( $this, 'check_secret' ),
 			)
 		);
 	}
@@ -87,7 +87,7 @@ class SNS extends WPPB_Object {
 
 		$saved_secret = $this->settings->get_secret_key();
 
-		if( $saved_secret !== $request_secret ) {
+		if ( $saved_secret !== $request_secret ) {
 			Logger::log( "secret incorrect. Was $request_secret expected $saved_secret." );
 			return false;
 		}
