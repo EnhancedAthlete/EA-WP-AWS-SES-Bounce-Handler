@@ -42,31 +42,43 @@
     "pablo-sg-pacheco/wp-namespace-autoloader": "dev-master"
   },
   "require-dev": {
-    "brianhenryie/composer-phpstorm": "dev-master",
-    "cweagans/composer-patches": "^1.0",
-    "coenjacobs/mozart": "0.6.0-beta-3",
-    "wordpress/wordpress": "^5.4",
-    "kporras07/composer-symlinks": "dev-master",
-    "phpunit/phpunit": "^7.5",
     "10up/wp_mock": "0.4.2",
-    "phpunit/phpcov": "^5.0",
-    "phpcompatibility/phpcompatibility-wp": "*",
+    "brianhenryie/composer-phpstorm": "dev-master",
     "dealerdirect/phpcodesniffer-composer-installer": "*",
-    "wp-coding-standards/wpcs": "*",
-    "wpackagist-plugin/newsletter":"*",
-    "wpackagist-plugin/woocommerce": ">4",
-    "wpackagist-theme/storefront": "*",
-    "lucatume/wp-browser": "2.4.2",
-    "codeception/module-asserts": "^1.0",
-    "voku/portable-ascii": "dev-master",
     "codeception/module-db": "^1.0.0",
     "codeception/module-phpbrowser": "^1.0.0",
     "codeception/module-webdriver": "^1.0",
     "codeception/module-filesystem": "^1.0",
+    "codeception/util-universalframework": "^1.0",
     "codeception/module-cli": "^1.0",
-    "codeception/util-universalframework": "^1.0"
+    "coenjacobs/mozart": "dev-master",
+    "cweagans/composer-patches": "~1.0",
+    "jaschilz/php-coverage-badger": "^2.0",
+    "kporras07/composer-symlinks": "dev-master",
+    "phpunit/phpunit": ">=7.0",
+    "phpunit/phpcov": "^5.0",
+    "phpcompatibility/phpcompatibility-wp": "*",
+    "lucatume/wp-browser": "*",
+    "codeception/module-asserts": "^1.0",
+    "wordpress/wordpress": "^5.4",
+    "wp-coding-standards/wpcs": "*",
+    "wpackagist-plugin/mailpoet":"*",
+    "wpackagist-plugin/newsletter":"*",
+    "wpackagist-theme/twentytwenty": "*",
+    "wpackagist-theme/storefront": "*",
+    "wpackagist-plugin/woocommerce": ">4",
+    "voku/portable-ascii": "dev-master"
   },
   "extra": {
+    "patches": {
+      "coenjacobs/mozart": {
+        "DIRECTORY_SEPARATOR": "https://github.com/coenjacobs/mozart/pull/61.patch",
+        "Delete empty directories": "https://github.com/coenjacobs/mozart/pull/59.patch"
+      },
+      "jaschilz/php-coverage-badger": {
+        "Allow customising the text": "https://github.com/JASchilz/PHPCoverageBadge/pull/1.patch"
+      }
+    },
     "mozart": {
       "dep_namespace": "EA_WP_AWS_SES_Bounce_Handler\\",
       "dep_directory": "/src/vendor/",
@@ -75,17 +87,15 @@
       "delete_vendor_directories": false
     },
     "symlinks": {
-      "wp-content": "vendor/wordpress/wordpress/build/wp-content",
-      "wp-content/plugins": "vendor/wordpress/wordpress/src/wp-content/plugins",
-      "src": "wp-content/plugins/ea-wp-aws-ses-bounce-handler",
-      "vendor/wordpress/wordpress/src": "wordpress"
+      "wp-content": "wordpress/wp-content",
+      "src": "wp-content/plugins/ea-wp-aws-ses-bounce-handler"
     },
     "phpstorm": {
       "exclude_folders": {
         "folders": [
           "vendor/wordpress/wordpress/src",
           "vendor/wordpress/wordpress/build",
-          "wordpress/wp-content/plugins",
+          "wordpress/wp-content",
           "wp-content/plugins/ea-wp-aws-ses-bounce-handler"
         ],
         "include_folders": [
@@ -98,8 +108,8 @@
   "scripts": {
     "post-install-cmd": [
       "\"vendor/bin/mozart\" compose",
-      "cd vendor/wordpress/wordpress; rm build/wp-content || true; npm install; npm run build; cd ../../..",
-      "export $(grep -v '^#' .env.testing | xargs); vendor/bin/wp config create --dbname=$TEST_SITE_DB_NAME --dbuser=$TEST_SITE_DB_USER --dbpass=$TEST_SITE_DB_PASSWORD --path=vendor/wordpress/wordpress/build || true",
+      "vendor/bin/wp core download --path=wordpress || true;",
+      "export $(grep -v '^#' .env.testing | xargs); vendor/bin/wp config create --dbname=$TEST_SITE_DB_NAME --dbuser=$TEST_SITE_DB_USER --dbpass=$TEST_SITE_DB_PASSWORD || true",
       "Kporras07\\ComposerSymlinks\\ScriptHandler::createSymlinks",
       "mkdir -p wordpress/wp-content/uploads",
       "BrianHenryIE\\ComposerPhpStorm\\ExcludeFolders::update",
@@ -107,8 +117,8 @@
     ],
     "post-update-cmd": [
       "\"vendor/bin/mozart\" compose",
-      "cd vendor/wordpress/wordpress; rm build/wp-content || true; npm install; npm run build; cd ../../..",
-      "export $(grep -v '^#' .env.testing | xargs); vendor/bin/wp config create --dbname=$TEST_SITE_DB_NAME --dbuser=$TEST_SITE_DB_USER --dbpass=$TEST_SITE_DB_PASSWORD --path=vendor/wordpress/wordpress/build || true",
+      "vendor/bin/wp core download --path=wordpress || true;",
+      "export $(grep -v '^#' .env.testing | xargs); vendor/bin/wp config create --dbname=$TEST_SITE_DB_NAME --dbuser=$TEST_SITE_DB_USER --dbpass=$TEST_SITE_DB_PASSWORD || true",
       "Kporras07\\ComposerSymlinks\\ScriptHandler::createSymlinks",
       "mkdir -p wordpress/wp-content/uploads",
       "BrianHenryIE\\ComposerPhpStorm\\ExcludeFolders::update",

@@ -47,3 +47,6 @@ src/dependencies/
 wp-content/
 
 scratch
+
+
+.env.secret
