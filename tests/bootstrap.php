@@ -11,5 +11,3 @@ $GLOBALS['plugin_path_php']    = $plugin_root_dir . '/' . $plugin_name_php;
 $GLOBALS['plugin_basename']    = $plugin_name . '/' . $plugin_name_php;
 $GLOBALS['wordpress_root_dir'] = $project_root_dir . '/vendor/wordpress/wordpress/src';
 
-
-require_once $plugin_root_dir . '/autoload.php';

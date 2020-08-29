@@ -18,5 +18,6 @@ modules:
             domain: "%TEST_SITE_WP_DOMAIN%"
             adminEmail: "%TEST_SITE_ADMIN_EMAIL%"
             title: "ea-wp-aws-ses-bounce-handler"
-            plugins: ['ea-wp-aws-ses-bounce-handler/ea-wp-aws-ses-bounce-handler.php']
+            plugins: []
             activatePlugins: []
+bootstrap: _bootstrap.php
