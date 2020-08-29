@@ -34,7 +34,7 @@ class Activator {
 
 		$secret_key = get_option( Settings_Interface::SECRET_KEY );
 		if ( false === $secret_key ) {
-			$secret_key = wp_generate_password();
+			$secret_key = wp_generate_password( 12, false );
 			update_option( Settings_Interface::SECRET_KEY, $secret_key );
 		}
 	}

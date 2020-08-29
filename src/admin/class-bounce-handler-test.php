@@ -97,20 +97,6 @@ class Bounce_Handler_Test {
 		$data['html'] .= '<p>Test started at time: <em>' . $this->get_id() . '</em></p>';
 		$data['html'] .= '<p>Using email address: <em>' . $this->get_email() . '</em></p>';
 
-		$to      = $this->get_email();
-		$subject = 'EA WP AWS SES Bounce Handler Test Email';
-		$message = 'EA WP AWS SES Bounce Handler Test Email';
-
-		$mail_send = wp_mail( $to, $subject, $message );
-
-		if ( ! $mail_send ) {
-
-			$data['message'] = 'wp_mail() failed';
-			wp_send_json_error( $data, 500 );
-		}
-
-		$data['html'] .= '<p>Test email sent to: <em>' . $this->get_email() . '</em></p>';
-
 		foreach ( $this->get_integrations() as $name => $integration ) {
 
 			if ( ! $integration->is_enabled() ) {
@@ -124,6 +110,20 @@ class Bounce_Handler_Test {
 			$data['html'] .= $test_setup['html'];
 
 		}
+
+		$to      = $this->get_email();
+		$subject = 'EA WP AWS SES Bounce Handler Test Email';
+		$message = 'EA WP AWS SES Bounce Handler Test Email';
+
+		$mail_send = wp_mail( $to, $subject, $message );
+
+		if ( ! $mail_send ) {
+
+			$data['message'] = 'wp_mail() failed';
+			wp_send_json_error( $data, 500 );
+		}
+
+		$data['html'] .= '<p>Test email sent to: <em>' . $this->get_email() . '</em></p>';
 
 		return $data;
 

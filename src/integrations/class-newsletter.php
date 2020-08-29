@@ -15,6 +15,7 @@ namespace EA_WP_AWS_SES_Bounce_Handler\integrations;
 
 use EA_WP_AWS_SES_Bounce_Handler\admin\Bounce_Handler_Test;
 use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
+use stdClass;
 use TNP;
 
 /**
@@ -59,14 +60,14 @@ class Newsletter extends WPPB_Object implements SES_Bounce_Handler_Integration_I
 	 *
 	 * @hooked handle_ses_bounce
 	 *
-	 * @param string $email_address     The email address that has bounced.
-	 * @param object $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
-	 * @param object $message           Parent object of complete notification.
+	 * @param string    $email_address     The email address that has bounced.
+	 * @param \stdClass $bounced_recipient Parent object with emailAddress, status, action, diagnosticCode.
+	 * @param \stdClass $message           Parent object of complete notification.
 	 *
 	 * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
 	 * phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
 	 */
-	public function handle_ses_bounce( $email_address, $bounced_recipient, $message ): void {
+	public function handle_ses_bounce( string $email_address, stdClass $bounced_recipient, stdClass $message ): void {
 
 		if ( ! $this->is_enabled() ) {
 			return;
@@ -81,11 +82,34 @@ class Newsletter extends WPPB_Object implements SES_Bounce_Handler_Integration_I
 	 *
 	 * @hooked handle_ses_complaint
 	 *
-	 * @param string $email_address     The email address that has bounced.
-	 * @param object $complained_recipient Parent object with emailAddress, status, action, diagnosticCode.
-	 * @param object $message           Parent object of complete notification.
+	 * @param string   $email_address     The email address that has bounced.
+	 * @param stdClass $complained_recipient Parent object with emailAddress, status, action, diagnosticCode.
+	 * @param stdClass $message           Parent object of complete notification.
 	 */
-	public function handle_ses_complaint( $email_address, $complained_recipient, $message ): void {
+	public function handle_ses_complaint( string $email_address, stdClass $complained_recipient, stdClass $message ): void {
+
+		if ( ! $this->is_enabled() ) {
+			return;
+		}
+
+		$params          = array();
+		$params['email'] = $email_address;
+
+		TNP::unsubscribe( $params );
+
+		// TODO: Associate the complaint with the particular newsletter sent.
+	}
+
+	/**
+	 * Unsubscribe user from future emails.
+	 *
+	 * @hooked handle_ses_complaint
+	 *
+	 * @param string   $email_address     The email address that has bounced.
+	 * @param stdClass $complained_recipient Parent object with emailAddress, status, action, diagnosticCode.
+	 * @param stdClass $message           Parent object of complete notification.
+	 */
+	public function handle_unsubscribe_email( string $email_address, stdClass $complained_recipient, stdClass $message ): void {
 
 		if ( ! $this->is_enabled() ) {
 			return;
@@ -106,7 +130,7 @@ class Newsletter extends WPPB_Object implements SES_Bounce_Handler_Integration_I
 	 *
 	 * @return array|void
 	 */
-	public function setup_test( $test ): ?array {
+	public function setup_test( Bounce_Handler_Test $test ): ?array {
 
 		if ( ! $this->is_enabled() ) {
 			return null;
@@ -147,7 +171,7 @@ class Newsletter extends WPPB_Object implements SES_Bounce_Handler_Integration_I
 	 *
 	 * @return array containing success boolean and html.
 	 */
-	public function verify_test( $test_data ): ?array {
+	public function verify_test( array $test_data ): ?array {
 
 		if ( ! $this->is_enabled() ) {
 			// This is an odd point to reach.
@@ -181,7 +205,7 @@ class Newsletter extends WPPB_Object implements SES_Bounce_Handler_Integration_I
 	 *
 	 * @param array $test_data {int: tnp_user_id}.
 	 */
-	public function delete_test_data( $test_data ): bool {
+	public function delete_test_data( array $test_data ): bool {
 
 		$user = null;
 

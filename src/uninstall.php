@@ -29,12 +29,9 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-require_once './autoload.php';
-
-use \EA_WP_AWS_SES_Bounce_Handler\includes\Settings_Interface;
-
-delete_option( Settings_Interface::SECRET_KEY );
-delete_option( \EA_WP_AWS_SES_Bounce_Handler\admin\Ajax::AWS_SES_BOUNCE_TESTS );
+delete_option( 'ea-wp-aws-ses-bounce-handler-secret-key' );
+delete_option( 'ea-wp-aws-ses-bounce-handler-confirmed-arns' );
+delete_option( 'aws_ses_bounce_tests' );
 
 $delete_all = true;
-delete_metadata( null, null, \EA_WP_AWS_SES_Bounce_Handler\integrations\WooCommerce::BOUNCED_META_KEY, null, $delete_all );
+delete_metadata( null, null, 'ea_wp_aws_ses_bounce_hander_bounced', null, $delete_all );

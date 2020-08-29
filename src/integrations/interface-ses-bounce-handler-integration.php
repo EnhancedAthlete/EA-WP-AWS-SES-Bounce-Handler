@@ -65,7 +65,7 @@ interface SES_Bounce_Handler_Integration_Interface {
 	 *
 	 * @see https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-examples.html
 	 */
-	public function handle_ses_complaint( string $email_address, stdClass $complained_recipient, stdClass $message): void;
+	public function handle_ses_complaint( string $email_address, stdClass $complained_recipient, stdClass $message ): void;
 
 	/**
 	 * First step in admin page tests. The integration should set up some dummy data (accounts, orders...) using

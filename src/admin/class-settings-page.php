@@ -74,6 +74,8 @@ class Settings_Page extends WPPB_Object {
 
 	/**
 	 * Figure out if WP_Mail is being overridden.
+	 *
+	 * @return string Admin notice showing how wp_mail is operating.
 	 */
 	public function get_wp_mail_info() {
 
@@ -151,7 +153,7 @@ class Settings_Page extends WPPB_Object {
 			return null;
 		}
 
-		$plugin_file = trim( substr( $filename, strlen( realpath( WP_PLUGIN_DIR ) ) ), '/' );
+		$plugin_file = trim( substr( $filename, strlen( realpath( WP_PLUGIN_DIR ) ) ), DIRECTORY_SEPARATOR );
 
 		$plugins = get_plugins();
 
@@ -160,7 +162,7 @@ class Settings_Page extends WPPB_Object {
 			return $plugins[ $plugin_file ];
 		}
 
-		$plugin_slug = substr( $plugin_file, 0, strpos( $plugin_file, '/' ) );
+		$plugin_slug = substr( $plugin_file, 0, strpos( $plugin_file, DIRECTORY_SEPARATOR ) );
 
 		foreach ( $plugins as $file => $plugin ) {
 

@@ -10,7 +10,7 @@
  * Plugin Name:       AWS SES Bounce Handler
  * Plugin URI:        https://github.com/EnhancedAthlete/ea-wp-aws-ses-bounce-handler
  * Description:       When AWS SES sends a bounce or complaint report, users & orders are marked; Newsletter users are unsubscribed.
- * Version:           1.2.0
+ * Version:           1.3.0
  * Author:            BrianHenryIE
  * Author URI:        https://BrianHenry.ie
  * License:           GPL-2.0+

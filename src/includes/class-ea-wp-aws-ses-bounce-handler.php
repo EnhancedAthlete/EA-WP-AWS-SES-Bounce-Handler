@@ -242,9 +242,11 @@ class EA_WP_AWS_SES_Bounce_Handler extends WPPB_Object {
 			if ( $integration->is_enabled() ) {
 				add_action( 'handle_ses_bounce', array( $integration, 'handle_ses_bounce' ), 10, 3 );
 				add_action( 'handle_ses_complaint', array( $integration, 'handle_ses_complaint' ), 10, 3 );
+				if ( method_exists( $integration, 'handle_unsubscribe_email' ) ) {
+					add_action( 'handle_unsubscribe_email', array( $integration, 'handle_unsubscribe_email' ), 10, 3 );
+				}
 			}
 		}
-
 	}
 
 	/**

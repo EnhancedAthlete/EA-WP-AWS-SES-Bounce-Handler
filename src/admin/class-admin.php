@@ -25,28 +25,32 @@ use EA_WP_AWS_SES_Bounce_Handler\WPPB\WPPB_Object;
  */
 class Admin extends WPPB_Object {
 
-	// TODO: Check ea-wp-aws-sns-client-rest-endpoint is installed.
-
 	/**
 	 * Register the stylesheets for the admin area.
 	 *
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
+		global $pagenow;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'ea-wp-aws-ses-bounce-handler' === filter_var( wp_unslash( $_GET['page'] ), FILTER_SANITIZE_STRING ) ) {
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ea-wp-aws-ses-bounce-handler-admin.css', array(), $this->version, 'all' );
-
+			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ea-wp-aws-ses-bounce-handler-admin.css', array(), $this->get_version(), 'all' );
+		}
 	}
+
 	/**
 	 * Register the JavaScript for the admin area.
 	 *
 	 * @since    1.2.0
 	 */
 	public function enqueue_scripts() {
+		global $pagenow;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'ea-wp-aws-ses-bounce-handler' === filter_var( wp_unslash( $_GET['page'] ), FILTER_SANITIZE_STRING ) ) {
 
-		$version = defined( WP_DEBUG ) && WP_DEBUG ? time() : $this->get_version();
-
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ea-wp-aws-ses-bounce-handler-admin.js', array( 'jquery' ), $version, false );
+			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ea-wp-aws-ses-bounce-handler-admin.js', array( 'jquery' ), $this->get_version(), false );
+		}
 	}
 
 }

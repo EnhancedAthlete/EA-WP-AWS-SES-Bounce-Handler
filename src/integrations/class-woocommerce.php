@@ -142,24 +142,29 @@ class WooCommerce extends WPPB_Object implements SES_Bounce_Handler_Integration_
 
 		$order = wc_get_order( intval( $test_data['wc_order_id'] ) );
 
-		$success = false;
+		if ( ! $order instanceof \WC_Order ) {
 
-		if ( $order instanceof \WC_Order ) {
-
-			$order_bounced_meta_value = $order->get_meta( self::BOUNCED_META_KEY );
-
-			if ( ! empty( $order_bounced_meta_value ) ) {
-
-				$success = true;
-
-				$order_url = admin_url( 'post.php?post=' . $order->get_id() . '&action=edit' );
-
-				$html = '<p>WooCommerce <a href="' . $order_url . '">order ' . $order->get_id() . '</a> found with meta key <em>' . self::BOUNCED_META_KEY . '</em> value: <em>' . $order_bounced_meta_value . '</em></p>';
-
-			}
-			// } else {
-			// Something weird going on.
+			return array(
+				'success' => false,
+				'html'    => '<p>WooCommerce order not found</p>',
+			);
 		}
+
+		$order_bounced_meta_value = $order->get_meta( self::BOUNCED_META_KEY );
+
+		if ( empty( $order_bounced_meta_value ) ) {
+
+			return array(
+				'success' => false,
+				'html'    => '<p>WooCommerce order meta key not found</p>',
+			);
+		}
+
+		$success = true;
+
+		$order_url = admin_url( 'post.php?post=' . $order->get_id() . '&action=edit' );
+
+		$html = '<p>WooCommerce <a href="' . $order_url . '">order ' . $order->get_id() . '</a> found with meta key <em>' . self::BOUNCED_META_KEY . '</em> value: <em>' . $order_bounced_meta_value . '</em></p>';
 
 		return array(
 			'success' => $success,
