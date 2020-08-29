@@ -49,6 +49,13 @@ class Admin_Test extends \Codeception\Test\Unit {
 
 		$_GET['page'] = $this->plugin_name;
 
+		\WP_Mock::userFunction(
+			'wp_unslash',
+			array(
+				'return' => $this->plugin_name,
+			)
+		);
+
 		// Return any old url.
 		\WP_Mock::userFunction(
 			'plugin_dir_url',
